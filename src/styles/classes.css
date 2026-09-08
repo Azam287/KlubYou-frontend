@@ -1,0 +1,86 @@
+.banner {
+  display: flex;
+  gap: 0.9rem;
+  background: rgba(241, 91, 65, 0.06);
+  border: 1px solid rgba(241, 91, 65, 0.25);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 20px;
+}
+.banner .bi {
+  color: var(--coral-deep);
+  flex: none;
+  margin-top: 2px;
+}
+.banner b {
+  font-weight: 700;
+}
+.banner p {
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+.class-card {
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+}
+.class-top {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+}
+.class-top .ci {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  background: var(--paper);
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  flex: none;
+}
+.class-top h4 {
+  font-size: 1.08rem;
+}
+.class-top .cm {
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+}
+.class-top .act-btns {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.flow {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.fstep {
+  flex: 1;
+  min-width: 130px;
+  background: var(--paper);
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+.fstep b {
+  display: block;
+  color: var(--ink);
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 1px;
+}
+.fstep.donef {
+  background: rgba(46, 125, 80, 0.08);
+}
+.fstep.donef b {
+  color: var(--good);
+}

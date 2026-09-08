@@ -1,0 +1,219 @@
+.grid4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.grid2 {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+.stat .top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  font-weight: 600;
+  gap: 8px;
+}
+.stat .val {
+  font-size: 2rem;
+  margin: 0.5rem 0 0.15rem;
+}
+.stat .delta {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--good);
+}
+.stat .delta.flat {
+  color: var(--ink-soft);
+}
+.stat .sico {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(241, 91, 65, 0.12);
+  color: var(--coral-deep);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-top: 6px;
+}
+.legend .row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.92rem;
+}
+.legend .dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  flex: none;
+}
+.legend .row b {
+  margin-left: auto;
+  font-family: "Bricolage Grotesque";
+}
+
+.activity {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+.act {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.act:last-child {
+  border-bottom: none;
+}
+.act .ai {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.act .txt {
+  font-size: 0.92rem;
+}
+.act .txt b {
+  font-weight: 700;
+}
+.act .when {
+  margin-left: auto;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+/* filters bar (members) */
+.filters {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.filters .chips {
+  margin-bottom: 0;
+}
+.filters .search {
+  margin-left: auto;
+}
+
+/* plans grid (reused by programme "sold as membership" preview elsewhere) */
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.plan-card {
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+.plan-card.course {
+  border-color: rgba(241, 91, 65, 0.4);
+}
+.ptype {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  background: var(--paper);
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+}
+.plan-card.course .ptype {
+  color: var(--coral-deep);
+  background: rgba(241, 91, 65, 0.12);
+}
+.plan-card h4 {
+  font-size: 1.15rem;
+  margin: 14px 0 2px;
+}
+.plan-card .pmeta {
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+  margin-bottom: 14px;
+}
+.plan-card .rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 16px;
+}
+.prow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.92rem;
+  padding: 0.5rem 0.7rem;
+  background: var(--paper);
+  border-radius: 9px;
+}
+.prow b {
+  font-family: "Bricolage Grotesque";
+}
+.plan-card .foot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.plan-card .cnt {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+.add-card {
+  border: 1.5px dashed var(--line);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  color: var(--ink-soft);
+  font-weight: 600;
+  min-height: 230px;
+  cursor: pointer;
+  background: none;
+  width: 100%;
+}
+.add-card:hover {
+  border-color: var(--coral);
+  color: var(--coral-deep);
+}
+
+@media (max-width: 860px) {
+  .grid4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+  .plan-grid {
+    grid-template-columns: 1fr;
+  }
+  .filters .search {
+    margin-left: 0;
+    max-width: none;
+  }
+}
