@@ -1,0 +1,47 @@
+{
+  "artboards": [
+    { "file": "Create.dc.html", "x": 0, "y": 0, "w": 1440, "h": 900, "title": "1 · Type first" },
+    { "file": "Draft.dc.html", "x": 1560, "y": 0, "w": 1440, "h": 1340, "title": "2 · Draft + readiness" },
+    { "file": "Recurrence.dc.html", "x": 3120, "y": 0, "w": 1440, "h": 1020, "title": "3 · Recurring series" },
+    { "file": "Main.dc.html", "x": 0, "y": 1600, "w": 1440, "h": 1720, "title": "4 · Published Live programme" },
+    { "file": "Recorded.dc.html", "x": 1560, "y": 1600, "w": 1440, "h": 1340, "title": "5 · Recorded programme" }
+  ],
+  "annotations": [
+    {
+      "id": "note-1",
+      "x": 0,
+      "y": -150,
+      "w": 440,
+      "text": "1. Type first\n\nThe one irreversible choice moves to the top of creation, above name and description. Today it sits last, under a photo uploader that does nothing."
+    },
+    {
+      "id": "note-2",
+      "x": 1560,
+      "y": -150,
+      "w": 440,
+      "text": "2. Draft + readiness checklist\n\nCloses a real hole: today a programme goes public the moment it has one offer, even with zero content. Nothing is visible at klubyou.co/maya until Publish, and the checklist is the page's answer to \"what do I do next?\""
+    },
+    {
+      "id": "note-3",
+      "x": 3120,
+      "y": -150,
+      "w": 440,
+      "text": "3. Recurrence, for real\n\nThe existing Repeats dropdown is collected and thrown away - you get one class. Here one form creates the whole series and shows exactly which dates it will make before you commit."
+    },
+    {
+      "id": "note-4",
+      "x": 0,
+      "y": 1400,
+      "w": 440,
+      "text": "4. Published Live programme\n\nNext class and its joining link stay pinned at the top. The stat strip is new - the page now answers \"is this working?\", not just \"what's in it\". Per-programme revenue needs payments to carry a programmeId; today they store a display string."
+    },
+    {
+      "id": "note-5",
+      "x": 1560,
+      "y": 1400,
+      "w": 440,
+      "text": "5. Recorded programme\n\nLessons are added inline on the row, not through a modal per lesson - a 20-lesson curriculum is currently 20+ modal round-trips."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

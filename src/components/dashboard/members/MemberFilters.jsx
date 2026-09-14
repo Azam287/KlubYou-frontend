@@ -22,10 +22,10 @@ export default function MemberFilters({ status, onStatus, plan, onPlan, search, 
         ))}
       </div>
       <select className="field selectw" value={plan} onChange={(e) => onPlan(e.target.value)}>
-        <option value="all">All plans &amp; courses</option>
-        <option value="membership">Studio membership</option>
-        <option value="course">September Flow</option>
-        <option value="dropin">Drop-in</option>
+        <option value="all">All access</option>
+        <option value="studio">Studio subscription</option>
+        <option value="programme">Single programme</option>
+        <option value="none">No plan yet</option>
       </select>
       <div className="search">
         <Icon name="search" size={16} color="#5B5470" />

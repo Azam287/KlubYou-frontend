@@ -5,7 +5,7 @@ import { useAppData } from "../../context/AppDataContext";
 
 export default function DoneStep() {
   const { handle } = useOnboarding();
-  const { updateStudio } = useAppData();
+  const { studio, updateStudio } = useAppData();
   const navigate = useNavigate();
 
   const enterApp = () => {
@@ -18,7 +18,7 @@ export default function DoneStep() {
       <div className="done-ring">
         <Icon name="check" size={34} strokeWidth={2.4} />
       </div>
-      <h1>You're all set, Maya</h1>
+      <h1>You're all set, {studio.ownerName}</h1>
       <p className="sub" style={{ marginBottom: "1.6rem" }}>
         Your page is live at <b>klubyou.co/{handle}</b>. Next, set up your page and schedule your
         first class — right from your dashboard.

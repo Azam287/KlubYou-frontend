@@ -1,0 +1,888 @@
+/* The studio membership: plan cards and the comparison table members see. */
+
+.plan-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-bottom: 8px;
+  align-items: stretch;
+}
+.plan {
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.plan:hover {
+  border-color: var(--line);
+  transform: translateY(-1px);
+}
+/* The plan a studio most wants sold, marked once and only once. */
+.plan.best {
+  border: 1.5px solid var(--coral);
+  box-shadow: 0 6px 20px rgba(241, 91, 65, 0.13);
+}
+.plan-flag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  background: var(--coral);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.35rem;
+}
+.plan-b {
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.plan-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.plan-h h4 {
+  font-size: 1.15rem;
+}
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 6px 0 4px;
+}
+.plan-price s {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+}
+.plan-price b {
+  font-family: "Bricolage Grotesque";
+  font-size: 1.75rem;
+  line-height: 1.1;
+}
+.plan-off {
+  background: rgba(241, 91, 65, 0.13);
+  color: var(--coral-deep);
+  font-size: 0.72rem;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 0.18rem 0.5rem;
+}
+.plan-meta {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.84rem;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+.plan-save {
+  color: var(--good);
+}
+.plan-inc {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+/* A plan that unlocks nothing can still be bought — so it says so. */
+.plan-inc.none {
+  color: var(--coral-deep);
+}
+
+/* ---------- comparison table ---------- */
+/* The only thing on these pages allowed to scroll sideways, and only when the
+   plans genuinely don't fit. */
+/* The best-selling column is tinted the whole way down, the way it is on the
+   page members see. */
+
+.plan-inc {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.plan-bundle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--ink);
+  font-weight: 700;
+}
+.plan-worth {
+  color: var(--good);
+}
+/* Which programmes a plan bundles. A list, because the names are the point. */
+.bundle-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 210px;
+  overflow-y: auto;
+}
+.bundle-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0.75rem;
+  border: 1.5px solid var(--line);
+  border-radius: 11px;
+  cursor: pointer;
+}
+.bundle-row.on {
+  border-color: var(--coral);
+  background: rgba(241, 91, 65, 0.05);
+}
+.bundle-row input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--coral);
+  flex: none;
+  cursor: pointer;
+}
+.bundle-row b {
+  display: block;
+  font-size: 0.92rem;
+}
+.bundle-row small {
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+}
+
+/* Group headings inside the table, separating what the bundle decides from
+   what you list by hand. */
+/* A derived cell is changed where it's decided, not here. */
+
+.plan-len {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.plan-desc {
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+/* What the plan you're building actually opens up, shown as you build it. */
+.plan-sum {
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  background: var(--paper);
+  padding: 12px 14px;
+  margin-top: 14px;
+}
+.plan-sum.warn {
+  border: 1.5px solid var(--coral);
+  background: rgba(241, 91, 65, 0.05);
+}
+.plan-sum b {
+  display: block;
+  font-size: 0.98rem;
+}
+.plan-sum span {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+/* ---------- tabs ---------- */
+.tabs {
+  display: flex;
+  gap: 0.3rem;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: -1px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.tab:hover {
+  color: var(--ink);
+}
+.tab.on {
+  color: var(--ink);
+  border-bottom-color: var(--coral);
+}
+.tab-n {
+  background: rgba(34, 26, 56, 0.07);
+  border-radius: 999px;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+.tab.on .tab-n {
+  background: rgba(241, 91, 65, 0.14);
+  color: var(--coral-deep);
+}
+
+/* ---------- bundles ---------- */
+.bundle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+.bundle {
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+/* A bundle holding nothing opens nothing for every plan using it. */
+.bundle.empty {
+  border: 1.5px dashed var(--coral);
+}
+.bundle-h {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+.bundle-h h4 {
+  font-size: 1.1rem;
+}
+.bundle-h p {
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+  margin-top: 2px;
+  line-height: 1.4;
+}
+.bundle-sum {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+.warn-text {
+  color: var(--coral-deep);
+}
+.bundle-items {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+.bchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  padding: 0.22rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.bchip.prog {
+  background: rgba(241, 91, 65, 0.11);
+  color: var(--coral-deep);
+}
+.bchip.lesson {
+  background: rgba(46, 125, 80, 0.11);
+  color: var(--good);
+}
+/* Which plans change if you edit this — the question you'd otherwise hold in
+   your head while editing. */
+.bundle-used {
+  border-top: 1px solid var(--line-soft);
+  padding-top: 10px;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+.bundle-pick.tall {
+  max-height: 300px;
+}
+.plan-from {
+  font-size: 0.8rem;
+}
+
+/* Switching between what a member sees and the version with every control. */
+/* The member's table: marks, not buttons. */
+.matrix.compare 
+.matrix.compare 
+
+/* Which bundles a row's content sits in. */
+
+/* A checkbox row used as a control above a table, not as a form field. */
+/* Hidden from the member's table, still here and still in its plans. */
+/* What's inside a bundle, listed under it. */
+
+/* ---------- the membership table ---------- */
+/* One editable table. The name column stays put while plan columns scroll, so
+   you never lose track of which row you're ticking. */
+.mtable-wrap {
+  overflow-x: auto;
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: 16px;
+}
+.mtable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 620px;
+}
+.mtable th,
+.mtable td {
+  padding: 0.6rem 0.8rem;
+  text-align: center;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: middle;
+}
+/* `.mtable td` is more specific than a bare `.mt-what`, so the name column has
+   to be named with its element or the whole column renders centred. */
+.mtable th.mt-what,
+.mtable td.mt-what {
+  text-align: left;
+  width: 46%;
+  min-width: 260px;
+  position: sticky;
+  left: 0;
+  background: var(--card);
+  z-index: 1;
+}
+.mtable tbody tr:last-child td {
+  border-bottom: none;
+}
+.mtable tbody tr:hover td {
+  background: rgba(34, 26, 56, 0.022);
+}
+.mtable tbody tr:hover td.mt-what {
+  background: #f7f5fa;
+}
+/* The header is part of the card, not a strip floating above it: same ground as
+   the body, separated by a firmer rule. It used to be `--paper`, the page's own
+   colour, which made the table look like it started below its own heading. */
+.mtable thead th {
+  background: var(--card);
+  border-bottom: 1.5px solid var(--line);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+}
+.mtable thead th.mt-what {
+  background: var(--card);
+  font-size: 0.74rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.mt-best {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--coral-deep);
+  margin-bottom: 1px;
+}
+.mt-plan {
+  display: block;
+  font-size: 0.98rem;
+  color: var(--ink);
+  font-family: "Bricolage Grotesque";
+}
+.mt-sub {
+  display: block;
+  font-weight: 600;
+  font-size: 0.76rem;
+  margin-top: 1px;
+}
+/* The best-selling column is tinted the whole way down, and the wrapper clips
+   it so the tint keeps the table's rounded corners. */
+.mtable th.on,
+.mtable td.on {
+  background: rgba(241, 91, 65, 0.055);
+}
+.mtable tbody tr:hover td.on {
+  background: rgba(241, 91, 65, 0.09);
+}
+.mt-name {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+.mt-name b {
+  display: block;
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+.mt-name small {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+/* Caret and count in one control: how many are inside, and the way to see them. */
+.mt-caret {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  height: 24px;
+  padding: 0 0.4rem;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink-soft);
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 800;
+  cursor: pointer;
+  flex: none;
+}
+.mt-caret svg {
+  transition: transform 0.15s;
+}
+.mt-caret:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.mt-caret.on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+.mt-caret.on svg {
+  transform: rotate(180deg);
+}
+.mt-caret.ghost {
+  width: 34px;
+  border: none;
+  background: none;
+  cursor: default;
+}
+.mt-hid {
+  display: inline-block;
+  margin-left: 0.4rem;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: rgba(34, 26, 56, 0.08);
+  color: var(--ink-soft);
+  border-radius: 999px;
+  padding: 0.08rem 0.4rem;
+  vertical-align: middle;
+}
+.is-draft .mt-name b,
+.is-draft .mt-name small {
+  opacity: 0.55;
+}
+/* A cell reads as a control: empty means "not in", filled means "in". */
+.mt-cell {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  color: var(--good);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  margin: 0 auto;
+  transition: border-color 0.12s, background 0.12s;
+}
+.mt-cell:hover {
+  border-color: var(--ink);
+}
+.mt-cell.yes {
+  background: rgba(46, 125, 80, 0.12);
+  border-color: rgba(46, 125, 80, 0.32);
+}
+.mt-act {
+  width: 74px;
+}
+.mt-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  justify-content: flex-end;
+}
+.mt-eye {
+  width: 27px;
+  height: 27px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.mt-eye:hover {
+  background: rgba(34, 26, 56, 0.06);
+  color: var(--ink);
+}
+.mt-eye.off {
+  color: var(--coral-deep);
+  background: rgba(241, 91, 65, 0.1);
+}
+/* What's inside a bundle, opened in place — indented under its row and marked
+   down the side so it reads as belonging to the row above. */
+.mt-inrow td {
+  background: rgba(34, 26, 56, 0.028);
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+  border-bottom: none;
+}
+.mtable .mt-inrow td.mt-what {
+  background: #f6f4f9;
+}
+.mt-inrow:last-of-type td {
+  border-bottom: 1px solid var(--line-soft);
+}
+.mt-inside {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin-left: 2.5rem;
+  padding-left: 0.7rem;
+  border-left: 2px solid var(--line);
+  font-size: 0.86rem;
+}
+.mt-inside small {
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+}
+.mt-inside .sdot {
+  align-self: center;
+}
+.push {
+  margin-left: auto;
+}
+
+/* ---------- member preview ---------- */
+.mv-plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+  align-items: stretch;
+}
+/* A column, so the button can be pushed to the bottom of whichever card is
+   tallest and every card's button sits on the same line. */
+.mv-plan {
+  display: flex;
+  flex-direction: column;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  text-align: center;
+}
+.mv-plan.best {
+  border-color: var(--coral);
+}
+/* Always rendered, empty on plans without one, so the row exists either way. */
+.mv-flag {
+  display: block;
+  min-height: 0.95rem;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--coral-deep);
+}
+.mv-plan b {
+  display: block;
+  font-family: "Bricolage Grotesque";
+  font-size: 1.05rem;
+  line-height: 1.25;
+  margin-top: 2px;
+}
+.mv-len {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+.mv-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.35rem;
+  margin-top: 8px;
+  min-height: 1.9rem;
+}
+.mv-was {
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+}
+.mv-price strong {
+  font-family: "Bricolage Grotesque";
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.mv-off {
+  display: block;
+  min-height: 1rem;
+  margin-bottom: 10px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--coral-deep);
+}
+/* Whatever the card above it holds, the button lands on the same line. */
+.mv-plan .btn {
+  margin-top: auto;
+}
+.mv-table {
+  overflow-x: auto;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+}
+.mv-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.mv-table th,
+.mv-table td {
+  padding: 0.55rem 0.7rem;
+  text-align: center;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 0.84rem;
+}
+.mv-table tr:last-child td {
+  border-bottom: none;
+}
+.mv-table th {
+  background: var(--paper);
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.mv-table th.on,
+.mv-table td.on {
+  background: rgba(241, 91, 65, 0.05);
+}
+.mv-table td:first-child,
+.mv-table th:first-child {
+  text-align: left;
+}
+.mv-table td:first-child b {
+  display: block;
+}
+.mv-table td:first-child small {
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+}
+.mv-yes {
+  color: var(--good);
+}
+.mv-no {
+  color: rgba(34, 26, 56, 0.3);
+}
+
+/* Ticked because the plan opens everything — nothing to switch off here. */
+.mt-cell.locked {
+  cursor: not-allowed;
+  border-style: dashed;
+  opacity: 0.75;
+}
+.mt-cell.locked:hover {
+  border-color: rgba(46, 125, 80, 0.32);
+}
+
+.bundle-status {
+  vertical-align: middle;
+  font-size: 0.68rem;
+  margin-left: 0.25rem;
+}
+
+.plan-draftnote {
+  margin-top: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--coral-deep);
+}
+
+/* A draft card, wherever it appears: still yours, not yet on sale. */
+.bundle.draft {
+  border-style: dashed;
+}
+.bundle.draft h4,
+.bundle.draft p {
+  opacity: 0.72;
+}
+
+/* Two boxes: the table, and the same plans as cards. Icon-only because the
+   two shapes are what they mean — the tooltip carries the words. */
+/* A bordered group, so the two icons read as one control rather than two loose
+   glyphs — the tray was `--paper`, the page's own colour, so it had no edge. */
+.viewpick {
+  display: flex;
+  gap: 3px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  padding: 3px;
+}
+.viewbtn {
+  width: 32px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.viewbtn:hover {
+  color: var(--ink);
+}
+.viewbtn.on {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(34, 26, 56, 0.16);
+}
+
+/* ---------- the plans tab ---------- */
+/* What the membership is doing, in four figures. Replaced a paragraph that
+   said the same thing every time you opened the page. */
+.msum {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1px;
+  background: var(--line-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.msum-b {
+  background: var(--card);
+  padding: 12px 16px;
+}
+.msum-b span {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.msum-b b {
+  font-family: "Bricolage Grotesque";
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+.msum-b b small {
+  font-family: "Hanken Grotesk";
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+/* A name isn't a number, so it doesn't pretend to be one. */
+.msum-name {
+  font-size: 1.05rem !important;
+  display: block;
+  margin-top: 4px;
+}
+
+/* Heading and its explanation on the left, controls on the right — they used
+   to share one row and wrap into each other. */
+.phead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.phead h3 {
+  font-size: 1.12rem;
+}
+.phead p {
+  font-size: 0.88rem;
+  margin-top: 2px;
+}
+.phead-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+/* The interaction hint belongs with the table, not in its heading. */
+.tcap {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+/* The menu sits in the corner of the header rather than in the middle of the
+   title — inline, it pushed every plan name off centre. It appears on hover or
+   keyboard focus; every action it holds is also permanently on the cards. */
+.mtable thead th {
+  position: relative;
+}
+/* Faint until you reach for it: there, but not competing with the plan name. */
+.mt-edit {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: none;
+  background: none;
+  color: var(--ink-soft);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  opacity: 0.4;
+  transition: opacity 0.12s, background 0.12s;
+}
+.mtable thead th:hover .mt-edit,
+.mt-edit:focus-visible {
+  opacity: 1;
+}
+.mt-edit:hover {
+  background: rgba(34, 26, 56, 0.07);
+  color: var(--ink);
+}
+
+
+/* A banner that reports a problem rather than explaining how something works.
+   Amber, the same as every other "worth a look" state, so it doesn't read as
+   the coral notices that sit at the top of the other tabs. */
+.banner.warn {
+  background: rgba(227, 154, 44, 0.08);
+  border-color: rgba(227, 154, 44, 0.45);
+}
+.banner.warn .bi {
+  color: #a9701a;
+}
+
+/* A plan column that opens nothing. Under the price, where the rest of what
+   the plan is gets said. */
+.mt-warn {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #a9701a;
+}

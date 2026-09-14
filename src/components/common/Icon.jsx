@@ -170,6 +170,46 @@ const PATHS = {
       <path d="M5 15V5a2 2 0 0 1 2-2h8" />
     </>
   ),
+  chevronUp: <path d="m6 14 6-6 6 6" strokeLinejoin="round" />,
+  chevronDown: <path d="m6 10 6 6 6-6" strokeLinejoin="round" />,
+  list: (
+    <>
+      <path d="M9 6h11M9 12h11M9 18h11" />
+      <path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" />
+    </>
+  ),
+  pencil: (
+    <>
+      <path d="M4 20h4.5L20 8.5a2.5 2.5 0 0 0-3.5-3.5L5 16.5V20Z" strokeLinejoin="round" />
+      <path d="M14.5 6.5 18 10" />
+    </>
+  ),
+  table: (
+    <>
+      <rect x="3" y="4" width="18" height="16" rx="2.5" />
+      <path d="M3 9.5h18M9.5 9.5V20M3 15h18" />
+    </>
+  ),
+  eye: (
+    <>
+      <path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="3" />
+    </>
+  ),
+  eyeOff: (
+    <>
+      <path d="M4 4l16 16" />
+      <path d="M9.9 5.7A9.9 9.9 0 0 1 12 5.5c6.4 0 10 6.5 10 6.5a17 17 0 0 1-3.6 4.3" strokeLinejoin="round" />
+      <path d="M6.3 7.8A16.7 16.7 0 0 0 2 12s3.6 6.5 10 6.5c1.5 0 2.8-.3 4-.9" strokeLinejoin="round" />
+      <path d="M10.6 10.6a3 3 0 0 0 4 4" strokeLinejoin="round" />
+    </>
+  ),
+  calendar: (
+    <>
+      <rect x="3" y="5" width="18" height="16" rx="3" />
+      <path d="M3 10h18M8 3v4M16 3v4" />
+    </>
+  ),
 };
 
 export default function Icon({ name, size = 18, strokeWidth = 1.8, color, className, style }) {

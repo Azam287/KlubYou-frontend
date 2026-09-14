@@ -149,8 +149,14 @@ textarea.field {
   margin-bottom: 0.4rem;
 }
 
-.ctrl + .ctrl {
-  margin-top: 12px;
+/* Vertical rhythm between form blocks.
+   This was `.ctrl + .ctrl` alone, which broke in two ways: the spacing vanished
+   the moment anything else sat between two controls (a checkbox row, a
+   two-column pair, a hint), and the same rule fired *inside* .two-col, pushing
+   the right-hand column a line lower than the left. */
+:is(.ctrl, .two-col, .checkrow, .picks, .segbtns, .series-preview, .hint, .daypick, .confirm-msg)
+  + :is(.ctrl, .two-col, .checkrow, .picks, .segbtns, .series-preview) {
+  margin-top: 14px;
 }
 
 .brand {
@@ -485,6 +491,22 @@ textarea.field {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  /* Columns start level with each other whatever is in them — a stretched
+     column made a short field float against a taller neighbour. */
+  align-items: start;
+}
+/* Side by side, not stacked: the rhythm rule above must not indent column two. */
+.two-col > .ctrl + .ctrl {
+  margin-top: 0;
+}
+/* One column on a narrow screen, where side-by-side fields get too tight. */
+@media (max-width: 520px) {
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+  .two-col > .ctrl + .ctrl {
+    margin-top: 14px;
+  }
 }
 .hint {
   font-size: 0.82rem;
@@ -507,6 +529,15 @@ textarea.field {
 .uploader b {
   color: var(--coral-deep);
 }
+/* The lead line of a confirmation. Was an inline style on one modal, so the
+   two confirmations didn't match each other. */
+.confirm-msg {
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+.confirm-msg + .hint {
+  margin-top: 0.4rem;
+}
 .checkrow {
   display: flex;
   align-items: flex-start;
@@ -515,7 +546,6 @@ textarea.field {
   border: 1.5px solid var(--line);
   border-radius: 12px;
   cursor: pointer;
-  margin-top: 4px;
 }
 .checkrow input {
   width: 18px;

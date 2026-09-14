@@ -245,3 +245,45 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* "Watch the intro" on a programme's plan card — the one thing a visitor can
+   see before paying. */
+.pp-watch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 8px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--coral-deep);
+  cursor: pointer;
+}
+
+/* What the selected length unlocks, on the page a visitor sees. */
+.pp-inc {
+  list-style: none;
+  margin: 10px 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.pp-inc li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+.pp-inc svg {
+  color: var(--good);
+  flex: none;
+}
+.pp-opt s {
+  opacity: 0.6;
+  margin-left: 0.3rem;
+  font-size: 0.78rem;
+}

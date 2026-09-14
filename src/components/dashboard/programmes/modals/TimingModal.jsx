@@ -1,11 +1,21 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "../../../common/Modal";
+import { fromDateTimeInputs, toDateInput, toTimeInput } from "../../../../lib/datetime";
 
-export default function TimingModal({ open, onClose, onSave }) {
+export default function TimingModal({ open, onClose, onSave, initialStartsAt, seriesCount = 0 }) {
   const [scope, setScope] = useState("one");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [notify, setNotify] = useState(true);
+
+  useEffect(() => {
+    if (open) {
+      setScope("one");
+      setDate(toDateInput(initialStartsAt));
+      setTime(toTimeInput(initialStartsAt));
+      setNotify(true);
+    }
+  }, [open, initialStartsAt]);
 
   const handleClose = () => {
     setScope("one");
@@ -16,9 +26,14 @@ export default function TimingModal({ open, onClose, onSave }) {
   };
 
   const handleSave = () => {
-    onSave({ when: [date, time].filter(Boolean).join(" · "), scope, notify });
+    const startsAt = fromDateTimeInputs(date, time) || initialStartsAt || null;
+    onSave({ startsAt, scope, notify });
     handleClose();
   };
+
+  // The series option only appears when there is a series to act on — it used
+  // to be offered unconditionally and never did anything.
+  const hasSeries = seriesCount > 1;
 
   return (
     <Modal
@@ -36,22 +51,24 @@ export default function TimingModal({ open, onClose, onSave }) {
         </>
       }
     >
-      <div className="ctrl">
-        <label className="lbl">Apply to</label>
-        <div className="segbtns">
-          <button className={`seg${scope === "one" ? " on" : ""}`} onClick={() => setScope("one")}>
-            This class only
-          </button>
-          <button className={`seg${scope === "series" ? " on" : ""}`} onClick={() => setScope("series")}>
-            The whole series
-          </button>
+      {hasSeries && (
+        <div className="ctrl">
+          <label className="lbl">Apply to</label>
+          <div className="segbtns">
+            <button className={`seg${scope === "one" ? " on" : ""}`} onClick={() => setScope("one")}>
+              This class only
+            </button>
+            <button className={`seg${scope === "series" ? " on" : ""}`} onClick={() => setScope("series")}>
+              All {seriesCount} in the series
+            </button>
+          </div>
+          <p className="hint">
+            {scope === "series"
+              ? `Every class in this series moves by the same amount, keeping the gaps between them.`
+              : "Only the occurrence you picked will move."}
+          </p>
         </div>
-        <p className="hint">
-          {scope === "series"
-            ? "Every class in this recurring series will move to the new time."
-            : "Only the occurrence you picked will move."}
-        </p>
-      </div>
+      )}
       <div className="two-col">
         <div className="ctrl">
           <label className="lbl">New date</label>

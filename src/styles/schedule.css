@@ -1,0 +1,250 @@
+/* The studio timetable. Every value here is derived at render time — see
+   lib/schedule.js for why nothing about it is stored. */
+
+.sched-now {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+}
+.sched-now b {
+  font-family: "Bricolage Grotesque";
+  font-size: 1.15rem;
+}
+.sched-now.on {
+  border: 1.5px solid var(--coral);
+  background: linear-gradient(180deg, rgba(241, 91, 65, 0.06), rgba(241, 91, 65, 0.02));
+}
+.sched-now-lbl {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  flex: none;
+}
+.sched-now.on .sched-now-lbl {
+  color: var(--coral-deep);
+}
+.sched-now-lbl i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--coral);
+  display: block;
+}
+
+.sched-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.sched-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.sqbtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.sqbtn:hover {
+  border-color: var(--ink);
+}
+.sqbtn.flip svg {
+  transform: rotate(180deg);
+}
+.sched-range {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.sched-range b {
+  font-family: "Bricolage Grotesque";
+  font-size: 1.1rem;
+}
+
+/* Seven columns on a desktop, stacking to a list as it narrows — a week that
+   has to scroll sideways stops being a week at a glance. */
+.sched-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+}
+@media (max-width: 1180px) {
+  .sched-week {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .sched-week {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.sday {
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  padding: 12px;
+  min-height: 132px;
+}
+.sday.empty {
+  background: transparent;
+  border-style: dashed;
+}
+.sday.today {
+  border: 1.5px solid var(--ink);
+}
+.sday-h {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.sday-h b {
+  font-size: 0.86rem;
+}
+/* The date beside the day name. Scoped off .sday-now so the badge below keeps
+   its own colour — `.sday-h span` outranks a bare `.sday-now`, which is how the
+   white "Today" badge ended up rendering in grey on a dark pill. */
+.sday-h span:not(.sday-now) {
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+.sday-h .sday-now {
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  background: var(--ink);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.1rem 0.4rem;
+}
+.sday-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sday-empty {
+  color: var(--ink-soft);
+  font-size: 0.84rem;
+}
+.sitem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  background: var(--paper);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 0.5rem 0.6rem;
+  cursor: pointer;
+  text-align: left;
+}
+.sitem:hover {
+  border-color: var(--ink);
+}
+.sitem.off {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+/* A clash is a warning, not a failure — amber, the same as every other
+   "worth a look" state in the app, rather than the grey it used to share with
+   "cancelled". */
+.sitem.clash {
+  border-color: rgba(227, 154, 44, 0.7);
+  background: rgba(227, 154, 44, 0.07);
+}
+.sitem-t {
+  font-weight: 800;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+/* Which page an entry came from, without spelling it out on every row. */
+.sdot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+}
+.sdot.prog {
+  background: var(--coral);
+}
+.sdot.lesson {
+  background: var(--good);
+}
+.sdot.once {
+  background: #e39a2c;
+}
+.sitem-n {
+  flex: 1;
+  min-width: 92px;
+}
+.sitem-n b {
+  display: block;
+  font-size: 0.86rem;
+  line-height: 1.25;
+}
+.sitem-n small {
+  color: var(--ink-soft);
+  font-size: 0.74rem;
+}
+.sitem .copy {
+  width: 26px;
+  height: 26px;
+}
+
+/* What the dots stand for. Colour is never the only carrier — every row also
+   names its source in words — but without this the dots were decoration. */
+.sched-legend {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.sched-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.sched-legend .sdot {
+  width: 8px;
+  height: 8px;
+}
+/* A week that has already run can't be acted on, so it doesn't invite it. */
+.sday.past {
+  opacity: 0.62;
+}
+.sday.past.today {
+  opacity: 1;
+}
+.sitem-fix {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}

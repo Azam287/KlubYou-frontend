@@ -20,67 +20,125 @@
   color: var(--ink-soft);
   margin-top: 2px;
 }
-.class-card {
+
+/* ---------- everyday lessons ---------- */
+.lcard {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
   background: var(--card);
   border: 1px solid var(--line-soft);
   border-radius: 16px;
-  padding: 18px 20px;
-  margin-bottom: 14px;
+  padding: 16px 18px;
+  margin-bottom: 12px;
 }
-.class-top {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  flex-wrap: wrap;
+.lcard.dim {
+  opacity: 0.72;
 }
-.class-top .ci {
-  width: 44px;
-  height: 44px;
-  border-radius: 11px;
-  background: var(--paper);
-  display: grid;
-  place-items: center;
-  color: var(--ink);
-  flex: none;
+/* A session in progress is the one thing on this page that is urgent. */
+.lcard.on-air {
+  border-color: var(--coral);
+  background: linear-gradient(180deg, rgba(241, 91, 65, 0.06), rgba(241, 91, 65, 0.02));
 }
-.class-top h4 {
-  font-size: 1.08rem;
+/* The time is the identity of a repeating lesson — you remember "the 7am",
+   not the date — so it leads the card. */
+.lcard-time {
+  min-width: 104px;
+  padding-right: 18px;
+  border-right: 1px solid var(--line-soft);
 }
-.class-top .cm {
-  font-size: 0.86rem;
-  color: var(--ink-soft);
-}
-.class-top .act-btns {
-  margin-left: auto;
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-.flow {
-  display: flex;
-  gap: 8px;
-  margin-top: 14px;
-  flex-wrap: wrap;
-}
-.fstep {
-  flex: 1;
-  min-width: 130px;
-  background: var(--paper);
-  border-radius: 10px;
-  padding: 0.6rem 0.75rem;
-  font-size: 0.82rem;
-  color: var(--ink-soft);
-}
-.fstep b {
+.lcard-time b {
   display: block;
-  color: var(--ink);
-  font-size: 0.85rem;
+  font-family: "Bricolage Grotesque";
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+.lcard-time span {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.lcard-main {
+  flex: 1;
+  min-width: 200px;
+}
+.lcard-main h4 {
+  font-size: 1.1rem;
+  margin-bottom: 4px;
+}
+.lcard-next {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  flex-wrap: wrap;
+}
+.lcard-rel {
+  background: rgba(34, 26, 56, 0.07);
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.78rem;
+}
+.lcard-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.lcard-url {
+  font-size: 0.84rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 260px;
+}
+.lcard-url.mut {
+  font-weight: 500;
+}
+.lcard-act {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+/* Seven toggles, one per weekday — the whole schedule editor. */
+.daypick {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.day {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+  font-family: inherit;
   font-weight: 700;
-  margin-bottom: 1px;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  cursor: pointer;
 }
-.fstep.donef {
-  background: rgba(46, 125, 80, 0.08);
+.day.on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
 }
-.fstep.donef b {
-  color: var(--good);
+
+/* Section headings, separating what repeats on its own from what you schedule
+   one at a time. */
+.sec-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 22px 2px 10px;
+  flex-wrap: wrap;
+}
+.sec-head h3 {
+  font-size: 1.05rem;
 }

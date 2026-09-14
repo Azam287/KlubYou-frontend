@@ -17,6 +17,8 @@ import ProgrammeDetailPage from "./components/dashboard/programmes/ProgrammeDeta
 import MembersPage from "./components/dashboard/members/MembersPage";
 import PaymentsPage from "./components/dashboard/payments/PaymentsPage";
 import ClassesPage from "./components/dashboard/classes/ClassesPage";
+import SchedulePage from "./components/dashboard/schedule/SchedulePage";
+import MembershipPage from "./components/dashboard/membership/MembershipPage";
 
 export default function App() {
   return (
@@ -43,6 +45,8 @@ export default function App() {
                 <Route path="members" element={<MembersPage />} />
                 <Route path="payments" element={<PaymentsPage />} />
                 <Route path="classes" element={<ClassesPage />} />
+                <Route path="schedule" element={<SchedulePage />} />
+                <Route path="membership" element={<MembershipPage />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />

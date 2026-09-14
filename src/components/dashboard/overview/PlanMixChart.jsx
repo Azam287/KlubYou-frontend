@@ -35,7 +35,7 @@ export default function PlanMixChart({ segments }) {
             {total}
           </text>
           <text x="64" y="76" textAnchor="middle" fontFamily="Hanken Grotesk" fontSize="10" fill="#5B5470">
-            members
+            people
           </text>
         </svg>
         <div className="legend" style={{ flex: 1 }}>

@@ -6,10 +6,12 @@ import { useAppData } from "../../context/AppDataContext";
 const NAV_ITEMS = [
   { to: "/dashboard", end: true, icon: "overview", label: "Overview" },
   { to: "/dashboard/page", icon: "page", label: "My page" },
+  { to: "/dashboard/classes", icon: "classes", label: "Everyday Lessons" },
+  { to: "/dashboard/schedule", icon: "calendar", label: "Schedule" },
   { to: "/dashboard/programmes", icon: "programmes", label: "Programmes" },
+  { to: "/dashboard/membership", icon: "voucher", label: "Membership" },
   { to: "/dashboard/members", icon: "members", label: "Members" },
   { to: "/dashboard/payments", icon: "payments", label: "Payments" },
-  { to: "/dashboard/classes", icon: "classes", label: "Classes" },
 ];
 
 export default function Sidebar() {

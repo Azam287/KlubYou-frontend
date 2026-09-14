@@ -199,3 +199,11 @@
     padding: calc(var(--topbar-h) + 16px) 20px calc(var(--mobile-nav-h) + 32px);
   }
 }
+
+/* A page can put more than one button in the topbar; they travel together. */
+.hdr-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}

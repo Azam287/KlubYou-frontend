@@ -8,7 +8,7 @@ export default function MemberTable({ members }) {
           <thead>
             <tr>
               <th style={{ paddingLeft: 12 }}>Member</th>
-              <th>Plan / course</th>
+              <th>Access</th>
               <th>Status</th>
               <th>Joined</th>
               <th>Renews / ends</th>
