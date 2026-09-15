@@ -11,7 +11,9 @@
 //     lib/stats.js from these rows, so a headline figure can't contradict the
 //     table printed beneath it.
 
-import { atOffset, monthsAgo, monthsAhead } from "../lib/datetime";
+import { addDays, atOffset, dayKeyOf, monthsAgo, monthsAhead } from "../lib/datetime";
+import { DEFAULT_CURRENCY, DEFAULT_TIMEZONE, partsOf } from "../lib/locale";
+import { SESSION_MINS, canAttend, phaseOf, recentSessions } from "../lib/attendance";
 
 export const initialStudio = {
   ownerName: "Maya",
@@ -20,6 +22,11 @@ export const initialStudio = {
   about:
     "Hi, I'm Maya. I've taught vinyasa and breathwork for eight years. Join me for calm, strong weekday morning classes — live and from anywhere.",
   handle: "maya",
+  // Settings. Every price is written in this currency, and every time — class
+  // times, "today", this month's earnings, payout day — is this zone's clock.
+  // The demo's dates are generated in it too. See lib/locale.js.
+  currency: DEFAULT_CURRENCY,
+  timezone: DEFAULT_TIMEZONE,
   // The public page. Only these are stored — what it sells comes from the
   // Membership and Programmes pages. See lib/page.js.
   // The picture across the top of the page, as a data URL. Empty uses a band
@@ -169,9 +176,8 @@ const member = (id, name, email, plan, opts = {}) => ({
   renewsAt: opts.renewsAt || null,
   // False once a subscription is stopped: access runs to renewsAt, then ends.
   autoRenew: opts.autoRenew ?? true,
-  // Classes attended (memberships and live programmes); videos watched
-  // (recorded programmes). The "out of" is worked out, never stored.
-  attended: opts.attended ?? 0,
+  // Videos watched (recorded programmes). Classes attended aren't a number on
+  // the member: they're attendance records, generated below (initialAttendance).
   watched: opts.watched ?? 0,
   vouchers: [],
 });
@@ -181,49 +187,49 @@ const member = (id, name, email, plan, opts = {}) => ({
 export const initialMembers = [
   // --- on a membership plan ---
   member("m1", "Emma Carter", "emma@email.com", "studio", {
-    planId: "sp3", joinedAt: monthsAgo(19), renewsAt: monthsAhead(5), attended: 34,
+    planId: "sp3", joinedAt: monthsAgo(19), renewsAt: monthsAhead(5),
   }),
   member("m2", "Sam Kelly", "sam.k@email.com", "studio", {
-    planId: "sp2", joinedAt: monthsAgo(13), renewsAt: monthsAhead(5), attended: 9,
+    planId: "sp2", joinedAt: monthsAgo(13), renewsAt: monthsAhead(5),
   }),
   member("m3", "Tom Reid", "tom@email.com", "studio", {
-    planId: "sp1", joinedAt: monthsAgo(13), renewsAt: atOffset(3, 9), attended: 6,
+    planId: "sp1", joinedAt: monthsAgo(13), renewsAt: atOffset(3, 9),
   }),
   member("m7", "Priya Shah", "priya@email.com", "studio", {
-    planId: "sp3", joinedAt: monthsAgo(10), renewsAt: monthsAhead(2), attended: 41,
+    planId: "sp3", joinedAt: monthsAgo(10), renewsAt: monthsAhead(2),
   }),
   member("m8", "Daniel Okoro", "dan.o@email.com", "studio", {
     // Stopped: keeps access to the end of what he paid for, then it ends.
-    planId: "sp2", joinedAt: monthsAgo(8), renewsAt: monthsAhead(1), autoRenew: false, attended: 22,
+    planId: "sp2", joinedAt: monthsAgo(8), renewsAt: monthsAhead(1), autoRenew: false,
   }),
   member("m9", "Hannah Brooks", "hannah@email.com", "studio", {
-    planId: "sp1", joinedAt: monthsAgo(6), renewsAt: atOffset(5, 9), attended: 12,
+    planId: "sp1", joinedAt: monthsAgo(6), renewsAt: atOffset(5, 9),
   }),
   member("m10", "Marcus Webb", "marcus@email.com", "studio", {
-    planId: "sp2", joinedAt: monthsAgo(5), renewsAt: monthsAhead(1), attended: 18,
+    planId: "sp2", joinedAt: monthsAgo(5), renewsAt: monthsAhead(1),
   }),
   member("m11", "Sofia Ricci", "sofia@email.com", "studio", {
-    planId: "sp3", joinedAt: monthsAgo(4), renewsAt: monthsAhead(8), attended: 25,
+    planId: "sp3", joinedAt: monthsAgo(4), renewsAt: monthsAhead(8),
   }),
   member("m12", "Leo Barnes", "leo.b@email.com", "studio", {
-    planId: "sp1", joinedAt: monthsAgo(3), renewsAt: atOffset(12, 9), attended: 7,
+    planId: "sp1", joinedAt: monthsAgo(3), renewsAt: atOffset(12, 9),
   }),
   member("m13", "Amara Diallo", "amara@email.com", "studio", {
-    planId: "sp2", joinedAt: monthsAgo(2), renewsAt: monthsAhead(4), attended: 14,
+    planId: "sp2", joinedAt: monthsAgo(2), renewsAt: monthsAhead(4),
   }),
   member("m14", "Ruth Nakamura", "ruth@email.com", "studio", {
-    planId: "sp3", joinedAt: monthsAgo(2), renewsAt: monthsAhead(10), attended: 11,
+    planId: "sp3", joinedAt: monthsAgo(2), renewsAt: monthsAhead(10),
   }),
   member("m15", "Chris Doyle", "chris@email.com", "studio", {
-    planId: "sp1", joinedAt: atOffset(-5), renewsAt: atOffset(25, 9), attended: 2,
+    planId: "sp1", joinedAt: atOffset(-5), renewsAt: atOffset(25, 9),
   }),
 
   // --- bought a programme ---
   member("m4", "Aisha Mahmood", "aisha@email.com", "programme", {
-    programmeId: "morning-vinyasa", offerId: "of1", joinedAt: monthsAgo(1, 12), attended: 1,
+    programmeId: "morning-vinyasa", offerId: "of1", joinedAt: monthsAgo(1, 12),
   }),
   member("m16", "Grace Lam", "grace@email.com", "programme", {
-    programmeId: "morning-vinyasa", offerId: "of1", joinedAt: monthsAgo(1, 20), attended: 1,
+    programmeId: "morning-vinyasa", offerId: "of1", joinedAt: monthsAgo(1, 20),
   }),
   member("m17", "Owen Pritchard", "owen@email.com", "programme", {
     programmeId: "breathwork-basics", offerId: "of4", joinedAt: monthsAgo(2, 8), watched: 3,
@@ -232,7 +238,7 @@ export const initialMembers = [
     programmeId: "breathwork-basics", offerId: "of4", joinedAt: atOffset(-9), watched: 2,
   }),
   member("m19", "Yusuf Karim", "yusuf@email.com", "programme", {
-    programmeId: "morning-vinyasa", offerId: "of2", joinedAt: monthsAgo(1, 3), renewsAt: monthsAhead(1, 3), attended: 1,
+    programmeId: "morning-vinyasa", offerId: "of2", joinedAt: monthsAgo(1, 3), renewsAt: monthsAhead(1, 3),
   }),
   member("m20", "Beatrice Cole", "bea@email.com", "programme", {
     programmeId: "breathwork-basics", offerId: "of4", joinedAt: atOffset(-2), watched: 1,
@@ -250,10 +256,10 @@ export const initialMembers = [
     status: "inactive", programmeId: "morning-vinyasa", offerId: "of2", joinedAt: monthsAgo(3), renewsAt: monthsAgo(2), autoRenew: false,
   }),
   member("m23", "Clara Mendes", "clara@email.com", "studio", {
-    status: "inactive", planId: "sp1", joinedAt: monthsAgo(9), renewsAt: monthsAgo(4), autoRenew: false, attended: 8,
+    status: "inactive", planId: "sp1", joinedAt: monthsAgo(9), renewsAt: monthsAgo(4), autoRenew: false,
   }),
   member("m24", "Ben Whitfield", "ben@email.com", "studio", {
-    status: "inactive", planId: "sp2", joinedAt: monthsAgo(14), renewsAt: monthsAgo(1), autoRenew: false, attended: 16,
+    status: "inactive", planId: "sp2", joinedAt: monthsAgo(14), renewsAt: monthsAgo(1), autoRenew: false,
   }),
 ];
 
@@ -299,11 +305,8 @@ export const initialPayments = [
 // `mode` and the hard-coded "flow" steps are gone: a class that stored
 // mode: "live" was still claiming to be live days later, and "84 joined so
 // far" was a number with nothing behind it. Both are derived now, or absent.
-const dayInput = (days) => {
-  const d = new Date();
-  d.setDate(d.getDate() + days);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-};
+// A calendar day `days` from today, in the studio's zone.
+const dayInput = (days) => dayKeyOf(addDays(new Date(), days));
 
 export const initialEverydayLessons = [
   {
@@ -343,6 +346,23 @@ export const initialEverydayLessons = [
     venueUrl: "",
     active: true,
   },
+  // Started about twenty minutes before the app was opened, so there's always a
+  // session on now and its attendance can be seen filling up. Named for no time
+  // of day, since it runs whenever the demo is opened.
+  (() => {
+    const start = new Date(Date.now() - 20 * 60000);
+    const p = partsOf(start);
+    const pad = (n) => String(n).padStart(2, "0");
+    return {
+      id: "el5",
+      title: "Drop-in Stretch",
+      time: `${pad(p.hour)}:${pad(p.minute - (p.minute % 5))}`,
+      days: [],
+      date: dayKeyOf(start),
+      venueUrl: "meet.google.com/lnch-strt-chk",
+      active: true,
+    };
+  })(),
 ];
 
 /* ---------- programmes ---------- */
@@ -373,7 +393,7 @@ export const initialProgrammes = [
     // them starts a week ago and runs four weeks.
     schedule: { startsOn: atOffset(-7, 0), weeks: 4 },
     classes: [
-      { id: "c1", seriesId: "sr1", title: "Week 1 · Foundations", startsAt: atOffset(-3, 7), venue: { platform: "yt", url: "youtu.be/live/xk20" }, active: true, attended: 12 },
+      { id: "c1", seriesId: "sr1", title: "Week 1 · Foundations", startsAt: atOffset(-3, 7), venue: { platform: "yt", url: "youtu.be/live/xk20" }, active: true },
       { id: "c2", seriesId: "sr1", title: "Week 2 · Hip openers", startsAt: atOffset(4, 7), venue: { platform: "zoom", url: "zoom.us/j/8841" }, active: true },
       { id: "c3", seriesId: "sr1", title: "Week 3 · Backbends", startsAt: atOffset(11, 7), venue: { platform: "zoom", url: "zoom.us/j/8841" }, active: true },
       { id: "c4", seriesId: "sr1", title: "Week 4 · Inversions", startsAt: atOffset(18, 7), venue: { platform: "zoom", url: "zoom.us/j/8841" }, active: true },
@@ -442,3 +462,67 @@ export const initialProgrammes = [
     ],
   },
 ];
+
+/* ---------- attendance ---------- */
+
+// A few weeks of people going through their links, so the Attendance page has
+// history to show. Generated from the same rules the app uses — only members
+// whose plan or purchase opens a session can appear at it — and from a hash
+// rather than Math.random, so the demo reads the same on every reload.
+//
+// How keen each member is: the share of the sessions open to them they come to.
+// Sam (m2) is deliberately rare, so "haven't come in a while" has someone in it.
+const KEENNESS = { m1: 0.8, m7: 0.85, m11: 0.6, m14: 0.45, m2: 0.08, m8: 0.5, m10: 0.4, m13: 0.65, m24: 0.3, m4: 0.9, m16: 0.7, m19: 0.55 };
+
+const unit = (text) => {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  // Keys differ only in their last few characters, so mix the bits once more —
+  // without this, neighbouring days came out nearly the same.
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x85ebca6b);
+  h ^= h >>> 13;
+  h = Math.imul(h, 0xc2b2ae35);
+  h ^= h >>> 16;
+  return (h >>> 0) / 4294967296;
+};
+
+function seedAttendance() {
+  const now = new Date();
+  const data = {
+    members: initialMembers,
+    plans: initialStudioPlans,
+    bundles: initialBundles,
+    programmes: initialProgrammes,
+    lessons: initialEverydayLessons,
+  };
+  const out = [];
+  for (const session of recentSessions(data, now)) {
+    const start = new Date(session.startsAt).getTime();
+    for (const m of initialMembers) {
+      if (!canAttend(m, session, data)) continue;
+      const key = `${m.id}|${session.id}`;
+      if (unit(key) >= (KEENNESS[m.id] ?? 0.5)) continue;
+      // Most arrive in the ten minutes before; about a third drift in late.
+      const r = unit(`${key}|t`);
+      const offset = r < 0.7 ? -10 + (r / 0.7) * 12 : 2 + ((r - 0.7) / 0.3) * 18;
+      const at = start + Math.round(offset) * 60000;
+      // A session on now only has the people who've arrived so far.
+      if (at > now.getTime() || (phaseOf(session, now) === "held" && at > start + SESSION_MINS * 60000)) continue;
+      const marked = unit(`${key}|v`) < 0.06;
+      out.push({
+        id: `att-${out.length + 1}`,
+        sessionId: session.id,
+        memberId: m.id,
+        at: new Date(marked ? start : at).toISOString(),
+        via: marked ? "marked" : "link",
+      });
+    }
+  }
+  return out;
+}
+
+export const initialAttendance = seedAttendance();

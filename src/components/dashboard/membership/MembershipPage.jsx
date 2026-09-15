@@ -11,8 +11,13 @@ import BundleCard from "./BundleCard";
 import BundleFormModal from "./BundleFormModal";
 import ExtraCard from "./ExtraCard";
 import FeatureFormModal from "./FeatureFormModal";
+import SearchInput from "../../common/SearchInput";
+import SearchEmpty from "../../common/SearchEmpty";
+import { matchesQuery } from "../../../lib/search";
 import { memberStats } from "../../../lib/stats";
 import {
+  bundleLessons,
+  bundleProgrammes,
   featureCountFor,
   isDraftItem,
   isLiveItem,
@@ -73,6 +78,9 @@ export default function MembershipPage() {
   } = useAppData();
 
   const [tab, setTab] = useState("plans");
+  // One search box per list tab. Cleared on switching, so a search typed on
+  // Bundles doesn't quietly hide benefits on the next tab.
+  const [search, setSearch] = useState("");
   // Two ways to read the same thing: what a member sees, and the version with
   // every control on it. Neither is a separate copy of the data.
   const [memberView, setMemberView] = useState(false);
@@ -138,6 +146,21 @@ export default function MembershipPage() {
     );
   }, [tab]);
 
+  // Bundles by name, description, or anything inside them — searching
+  // "vinyasa" finds every bundle that holds Morning Vinyasa.
+  const shownBundles = bundles.filter((b) =>
+    matchesQuery(
+      [
+        b.name,
+        b.description,
+        ...bundleProgrammes(b, programmes).map((p) => p.name),
+        ...bundleLessons(b, everydayLessons).map((l) => l.title),
+      ],
+      search
+    )
+  );
+  const shownFeatures = features.filter((f) => matchesQuery([f.title, f.detail], search));
+
   usePageHeader(
     "Membership",
     "Plans people buy, the bundles they open, and the extra benefits that come with them.",
@@ -163,7 +186,10 @@ export default function MembershipPage() {
             key={t.key}
             className={`tab${tab === t.key ? " on" : ""}`}
             data-tip={t.tip}
-            onClick={() => setTab(t.key)}
+            onClick={() => {
+              setTab(t.key);
+              setSearch("");
+            }}
           >
             {t.label}
             <span className="tab-n">
@@ -373,9 +399,22 @@ export default function MembershipPage() {
             </div>
           </div>
 
-          {bundles.length ? (
+          {bundles.length > 0 && (
+            <div className="filters">
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder="Search bundles"
+                label="Search bundles by name or what's in them"
+              />
+            </div>
+          )}
+
+          {bundles.length && !shownBundles.length ? (
+            <SearchEmpty query={search} noun="bundles" onClear={() => setSearch("")} />
+          ) : bundles.length ? (
             <div className="bundle-grid">
-              {bundles.map((b) => (
+              {shownBundles.map((b) => (
                 <BundleCard
                   key={b.id}
                   bundle={b}
@@ -417,9 +456,22 @@ export default function MembershipPage() {
             </div>
           </div>
 
-          {features.length ? (
+          {features.length > 0 && (
+            <div className="filters">
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder="Search extra benefits"
+                label="Search extra benefits by name or detail"
+              />
+            </div>
+          )}
+
+          {features.length && !shownFeatures.length ? (
+            <SearchEmpty query={search} noun="extra benefits" onClear={() => setSearch("")} />
+          ) : features.length ? (
             <div className="bundle-grid">
-              {features.map((f) => (
+              {shownFeatures.map((f) => (
                 <ExtraCard
                   key={f.id}
                   extra={f}

@@ -25,10 +25,11 @@ export default function DeleteClassModal({ open, onClose, onConfirm, seriesCount
       maxWidth={440}
       footer={
         <>
-          <button className="btn btn-ghost" onClick={handleClose}>
+          <button className="btn btn-ghost" onClick={handleClose} data-tip="Keep the class">
             Cancel
           </button>
           <button
+            data-tip={scope === "series" && hasSeries ? `Delete all ${seriesCount} classes in the series` : "Delete just this class"}
             className="btn btn-coral"
             onClick={() => {
               onConfirm(scope);
@@ -46,10 +47,18 @@ export default function DeleteClassModal({ open, onClose, onConfirm, seriesCount
       {hasSeries && (
         <div className="ctrl">
           <div className="segbtns">
-            <button className={`seg${scope === "one" ? " on" : ""}`} onClick={() => setScope("one")}>
+            <button
+              className={`seg${scope === "one" ? " on" : ""}`}
+              onClick={() => setScope("one")}
+              data-tip="Delete only this class"
+            >
               This class only
             </button>
-            <button className={`seg${scope === "series" ? " on" : ""}`} onClick={() => setScope("series")}>
+            <button
+              className={`seg${scope === "series" ? " on" : ""}`}
+              onClick={() => setScope("series")}
+              data-tip="Delete every class in this series"
+            >
               All {seriesCount} in the series
             </button>
           </div>

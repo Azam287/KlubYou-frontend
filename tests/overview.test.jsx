@@ -108,7 +108,8 @@ ok("active members matches the members page", page.includes(`Active members</spa
 ok("...earned this month matches payments", page.includes(`Earned this month</span><b>${money(paymentSummary(PAY, now).received)}</b>`));
 ok("...compared with this day last month, not the whole month", page.includes("this day last month") && !page.includes("vs Aug") && !page.includes("First month of sales"));
 ok("...with the next payout and retention", page.includes("Next payout</span>") && page.includes(`Retention</span><b>${people.retention}%</b>`));
-ok("each figure opens its page", /<a class="msum-b" href="\/dashboard\/members"/.test(page) && /<a class="msum-b" href="\/dashboard\/payments"/.test(page));
+ok("each figure opens its page", /<a class="msum-b" data-tip="[^"]*" href="\/dashboard\/members"/.test(page)
+  && /<a class="msum-b" data-tip="[^"]*" href="\/dashboard\/payments"/.test(page));
 ok("the page has attention, coming up, earnings, who's here and activity", ["Needs your attention", "Coming up", "Earnings", "Who's here", "Recent activity"]
   .every((h) => page.includes(`<h3>${h}</h3>`)));
 ok("the old 'Plan mix' and 'Programmes sold' are gone", !page.includes("Plan mix") && !page.includes("Programmes sold"));

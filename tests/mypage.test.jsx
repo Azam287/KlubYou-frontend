@@ -209,7 +209,9 @@ ok("...and no file at all", !!imageFileProblem(null));
 const img = "data:image/png;base64,AAAA";
 const withImg = R(<PagePreview studio={{ ...S, coverImage: img }} plans={plans} programmes={progs} bundles={B} lessons={L} />);
 ok("an uploaded image fills the header", withImg.includes('class="pg-cover img"') && withImg.includes(`background-image:url(${img})`));
-ok("...without one the header is tinted, not blank", pv.includes('class="pg-cover"') && !pv.includes("background-image"));
+// Changed by hand in the "My page, members, payments" commit: with no upload
+// the header shows a placeholder photo rather than the colour tint.
+ok("...without one the header shows the placeholder photo", pv.includes("background-image:url(https://picsum.photos/400/150)"));
 
 const noImgEditor = R(<ImageField label="Header image" image="" onChange={noop} />);
 ok("the editor offers an upload", noImgEditor.includes("> Upload<") && noImgEditor.includes('type="file"'));

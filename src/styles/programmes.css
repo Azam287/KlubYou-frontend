@@ -1117,3 +1117,25 @@
   color: #fff;
   font-weight: 600;
 }
+
+/* The members' link inside the up-next card and class rows. */
+.upnext-link .jlink-url {
+  font-size: 0.86rem;
+  max-width: 190px;
+}
+.upnext-att,
+.ci-att {
+  color: var(--good);
+  font-weight: 700;
+  text-decoration: none;
+}
+.upnext-att {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.86rem;
+}
+.upnext-att:hover,
+.ci-att:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

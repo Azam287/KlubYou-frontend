@@ -13,6 +13,7 @@ import { addDays, liveNow, occurrencesBetween } from "./schedule";
 import { paymentLabel, planOf, stateOf } from "./members";
 import { money } from "./stats";
 import { pageChanged } from "./page";
+import { partsOf, zonedDate } from "./locale";
 
 const DAY = 86400000;
 const time = (iso) => (iso ? new Date(iso).getTime() : NaN);
@@ -24,17 +25,13 @@ const time = (iso) => (iso ? new Date(iso).getTime() : NaN);
 // falling, right up until the last day.
 export function earningsToDate(payments, now = new Date()) {
   const paid = (payments || []).filter((p) => p.status === "paid");
-  const start = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-  const lastStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+  // Months and days in the studio's zone, so "this month" starts at its midnight.
+  const p = partsOf(now);
+  const start = zonedDate(p.year, p.month, 1).getTime();
+  const lastStart = zonedDate(p.year, p.month - 1, 1).getTime();
   // The same day last month, capped to that month's length (31 Mar → 28 Feb).
-  const lastMonthDays = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
-  const sameDay = new Date(
-    now.getFullYear(),
-    now.getMonth() - 1,
-    Math.min(now.getDate(), lastMonthDays),
-    now.getHours(),
-    now.getMinutes()
-  ).getTime();
+  const lastMonthDays = partsOf(zonedDate(p.year, p.month, 0, 12)).day;
+  const sameDay = zonedDate(p.year, p.month - 1, Math.min(p.day, lastMonthDays), p.hour, p.minute).getTime();
   const sum = (from, to) => paid.filter((p) => time(p.paidAt) >= from && time(p.paidAt) <= to).reduce((t, p) => t + p.amount, 0);
   const thisMonth = sum(start, now.getTime());
   const lastMonthSoFar = sum(lastStart, sameDay);

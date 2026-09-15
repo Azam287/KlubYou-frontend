@@ -26,10 +26,11 @@ export default function VenueLinkModal({
       title={title}
       footer={
         <>
-          <button className="btn btn-ghost" onClick={onClose}>
+          <button className="btn btn-ghost" onClick={onClose} data-tip="Close without saving">
             Cancel
           </button>
           <button
+            data-tip="Save the joining link"
             className="btn btn-coral"
             onClick={() => {
               onSave(url);

@@ -39,6 +39,7 @@ TypeScript, no Prettier.
 | [docs/domain.md](docs/domain.md)                 | What a programme, lesson, plan, bundle and benefit are, and the rules between them |
 | [docs/architecture.md](docs/architecture.md)     | Before changing code. Where things live and how data flows    |
 | [docs/testing.md](docs/testing.md)               | Before claiming a change works                                |
+| [docs/backend/](docs/backend/README.md)          | The proposed backend: data model, API, flows, build order, open questions |
 | [CLAUDE.md](CLAUDE.md)                           | Working with Claude Code — it reads this automatically        |
 
 ## Working with Claude Code

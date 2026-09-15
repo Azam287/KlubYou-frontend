@@ -7,15 +7,16 @@
 // below it showed one. Deriving them makes that class of contradiction
 // impossible rather than merely fixed.
 
-import { formatMonthYear, isFuture, sameMonth } from "./datetime";
+import { formatMonthYear, isFuture, sameMonth, startOfMonth } from "./datetime";
 import { allVideos, isLive, sortedClasses } from "./programme";
+import { classSessionId } from "./sessions";
 
 export const FEE_RATE = 0.1;
 export const FEE_LABEL = `${Math.round(FEE_RATE * 100)}%`;
 
-export const money = (n) =>
-  `£${Number(n || 0).toLocaleString("en-GB", { maximumFractionDigits: 0 })}`;
-export const money2 = (n) => `£${Number(n || 0).toFixed(2)}`;
+// Written in the studio's currency (lib/locale.js). Re-exported here because
+// most of the app already imports them from stats.
+export { money, money2 } from "./locale";
 
 export const creatorKeeps = (amount) => amount * (1 - FEE_RATE);
 
@@ -91,7 +92,7 @@ export function paymentTotals(payments, now = new Date()) {
 export function monthlyEarnings(payments, months = 6, now = new Date()) {
   const out = [];
   for (let i = months - 1; i >= 0; i--) {
-    const ref = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const ref = startOfMonth(now, -i);
     const amount = payments
       .filter((p) => p.status === "paid" && sameMonth(p.paidAt, ref))
       .reduce((t, p) => t + p.amount, 0);
@@ -131,14 +132,16 @@ export function classesHeld(programme, now = Date.now()) {
   return (programme?.classes || []).filter((c) => !isFuture(c.startsAt, now)).length;
 }
 
-// Average heads per class actually held. Classes that haven't run yet carry no
-// attendance, so they're excluded rather than counted as zero.
-export function averageAttendance(programme, now = Date.now()) {
-  const held = (programme?.classes || []).filter(
-    (c) => !isFuture(c.startsAt, now) && typeof c.attended === "number"
-  );
+// Average heads per class actually held, from attendance records. Classes that
+// haven't run yet are excluded rather than counted as zero; a cancelled one
+// wasn't held. (It used to read an `attended` number typed into each class.)
+export function averageAttendance(programme, attendance = [], now = Date.now()) {
+  const held = (programme?.classes || []).filter((c) => c.active && !isFuture(c.startsAt, now));
   if (!held.length) return null;
-  return Math.round(held.reduce((t, c) => t + c.attended, 0) / held.length);
+  const came = (attendance || []).filter((r) =>
+    held.some((c) => r.sessionId === classSessionId(programme.id, c.id))
+  ).length;
+  return Math.round(came / held.length);
 }
 
 // Total runtime of a recorded programme, from each video's "m:ss" duration.

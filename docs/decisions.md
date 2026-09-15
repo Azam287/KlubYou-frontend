@@ -204,6 +204,44 @@ carry no individual dates.
 **Why:** the user asked for both pages to be paginated.
 **Where:** `src/lib/paging.js`, `src/components/common/Pagination.jsx`, `MembersPage.jsx`, `PaymentsPage.jsx`.
 
+### Overview rebuilt from the other pages' data
+**Decision:** the Overview derives everything: summary figures linked to their pages (earnings compared with the same day last month), a "Needs your attention" list, "Coming up" from the schedule, "Who's here" by plan name, and recent activity from real payments, sign-ups and vouchers.
+**Why:** the user asked to update the Overview; it carried a hand-written activity feed, figures from older rules, an unfair month-on-month comparison and a plan mix that wasn't by plan.
+**Rejected / removed:** `initialActivity` and the `activity` state; `planMixOf`; the `StatCard` cards; "Programmes sold".
+**Where:** `src/lib/overview.js`, `src/components/dashboard/overview/`.
+
+### My page header uses a placeholder photo
+**Decision:** with no uploaded header image, the preview shows a placeholder photo (`picsum.photos/400/150`) instead of the colour tint. Made by hand in the "My page, members, payments page update" commit; recorded here from the code.
+**Where:** `PagePreview.jsx` (`cover`).
+
+### Search wherever a list needs it
+**Decision:** one search rule (`matchesQuery`: case- and accent-insensitive, every word must match) and one `SearchInput` box, added to Programmes, Everyday lessons, Membership's Bundles and Extra benefits tabs, and — once they pass 6 choices — the bundle form, plan form and My page programme pick-lists. Members and Payments moved onto the shared box and rule.
+**Why:** the user asked for search inputs everywhere they're needed.
+**Rejected:** search on the Membership plans table (position-ordered rows), the schedule (a week view), and videos/classes inside a programme (set order).
+**Where:** `src/lib/search.js`, `src/components/common/SearchInput.jsx`, `SearchEmpty.jsx`.
+
+### Tooltips on every control in the app
+**Decision:** every button, link, ⋯ menu and menu item across the app has a `data-tip` tooltip saying what it does — Everyday lessons, Programmes (list, detail, sections, videos, classes, pricing, readiness, all modals), Schedule, the shared class and link forms, the sidebar and onboarding, on top of Membership, My page, Members, Payments and Overview. Disabled buttons explain why they're disabled. Native `title` tooltips were replaced. A source-scanning test enforces it for anything added later.
+**Why:** the user asked for tooltips on all buttons and actions.
+**Where:** `tests/tooltips-app.test.js`; `.tip-wrap.tip-block` / `.ready-go-wrap` in `globals.css` for full-width disabled buttons.
+
 ### Documentation and tests live in the repo
 **Decision:** `README.md`, `CLAUDE.md`, `docs/`, and `npm test` suites in `tests/` are the shared context for everyone working on the project, with or without Claude. Docs are updated in the same change as the code (enforced by a Stop hook in `.claude/settings.json`).
 **Why:** context held only in one person's Claude memory or a temp folder is lost to everyone else — the first set of test suites was wiped with a temp directory.
+
+### 2026-09-16 — Every live class and lesson has its own members' link, and attendance is tracked
+**Decision:** every everyday lesson, one-off and live-programme class gets a KlubYou **members' link** (`join.klubyou.co/<handle>/<lessonId>` or `/<programmeId>/<classId>`), and each member a personal copy (`?m=`). Going through it marks them present and sends them on to the Zoom / Meet / YouTube address, which members are never given. A lesson keeps one link for every session; a class has its own. The dashboard gains an **Attendance** page (last 4 weeks: sessions, average, turn-up, came late; on now; members who haven't come in 14 days; every session, filterable and paged) and a page per session (link and where it sends people, came / turn-up / late / first time / marked by you, arrivals in 5-minute steps, recent sessions, and a register to mark anyone present or absent). Copy buttons on lesson cards, programme classes and the schedule copy the members' link. Members' "classes attended" and a programme's average attendance are now counted from attendance records; the typed-in `attended` numbers on members and classes are gone.
+**Why:** the user wants every live class trackable — to mark attendance and see live analytics — which needs a link of our own in front of the hosting address.
+**The join page is not in this app.** The user said the page behind the link lives on its own domain; this dashboard only hands links out and reads back who came. The domain is one constant (`JOIN_DOMAIN`).
+**Assumed, not confirmed:** a lesson that no published bundle names (the one-offs) is open to every member on a plan, as the Everyday lessons page promises; a link opens 15 minutes early; more than 5 minutes after the start is late; "quiet" is 14 days. Watch time isn't shown — a redirect can't see it without a Zoom/YouTube connection, and the page says so.
+**Rejected:** an in-app join page (see above).
+**Where:** `src/lib/sessions.js`, `src/lib/attendance.js`, `components/dashboard/attendance/`, `shared/JoinLink.jsx`, docs/domain.md → Attendance.
+
+### 2026-09-16 — Settings: studio name, page address, currency and time zone
+**Decision:** a Settings page (`#/dashboard/settings`, last in the sidebar) edits the studio name, the page address (`klubyou.co/<handle>`), the currency and the time zone. Changes are a draft until **Save changes**; anything with a consequence asks first and says it (a new address breaks links already shared; a currency change relabels prices without converting them; a zone change moves programme classes' clock times while lessons keep theirs). Saving takes effect at once — the name also updates the published page, and a new address is carried into every programme share link. **The currency** is used for every price, including offers saved as "£40" (their number is what counts). **The time zone** is what every time rule uses — class and lesson times, today, the week, run windows, this month's earnings, payout Friday, renewals — instead of the browser's zone. The demo studio is Europe/London, GBP.
+**Why:** the user asked for these settings, and for the time zone to drive all time-related features.
+**Reverses:** "the page handle still can't be changed from My page" (the address is now changed in Settings, with the broken-links warning).
+**Also:** the always-on demo lesson was renamed "Drop-in Stretch" — "Lunchtime Stretch" at 12:10am read wrongly.
+**Assumed, not confirmed:** "domain" means the `klubyou.co/<handle>` address, not a custom domain; twelve currencies are offered; no conversion of amounts.
+**Where:** `src/lib/locale.js`, `src/lib/settings.js`, `components/dashboard/settings/SettingsPage.jsx`, docs/domain.md → Settings.
+

@@ -5,7 +5,7 @@
 // that's written down separately is a second copy of the truth, and the two
 // drift the moment a class moves.
 
-import { isValidDate } from "./datetime";
+import { addDays, atClock, dayKeyOf, fromDayInput, isValidDate, sameDay, startOfDay, weekdayOf } from "./datetime";
 import { currentSession, repeats } from "./everyday";
 import { isLive } from "./programme";
 
@@ -13,27 +13,15 @@ import { isLive } from "./programme";
 // within the half hour is a conflict a creator wants to see.
 const CLASH_MINS = 30;
 
-export const startOfDay = (date) => {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
-};
-
-export function addDays(date, days) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-}
+// Days are the studio's days (lib/datetime.js), whatever zone the browser is in.
+export { addDays, sameDay, startOfDay };
 
 // Monday-first week containing `date`.
 export function startOfWeek(date) {
   const d = startOfDay(date);
-  const back = (d.getDay() + 6) % 7;
+  const back = (weekdayOf(d) + 6) % 7;
   return addDays(d, -back);
 }
-
-export const sameDay = (a, b) =>
-  new Date(a).toDateString() === new Date(b).toDateString();
 
 const entry = (startsAt, fields) => ({ startsAt: new Date(startsAt).toISOString(), ...fields });
 
@@ -76,10 +64,9 @@ function lessonEntries(lessons, from, to) {
     if (Number.isNaN(h)) continue;
 
     if (!repeats(l)) {
-      if (!l.date) continue;
-      const [y, mo, d] = String(l.date).split("-").map(Number);
-      if (!y) continue;
-      const at = new Date(y, mo - 1, d, h, m || 0, 0, 0);
+      const day = fromDayInput(l.date);
+      if (!day) continue;
+      const at = atClock(day, h, m || 0);
       if (at >= from && at < to) {
         out.push(
           entry(at, {
@@ -98,13 +85,12 @@ function lessonEntries(lessons, from, to) {
     }
 
     for (let cursor = startOfDay(from); cursor < to; cursor = addDays(cursor, 1)) {
-      if (!l.days.includes(cursor.getDay())) continue;
-      const at = new Date(cursor);
-      at.setHours(h, m || 0, 0, 0);
+      if (!l.days.includes(weekdayOf(cursor))) continue;
+      const at = atClock(cursor, h, m || 0);
       if (at < from || at >= to) continue;
       out.push(
         entry(at, {
-          id: `${l.id}:${at.toDateString()}`,
+          id: `${l.id}:${dayKeyOf(at)}`,
           refId: l.id,
           title: l.title,
           venueUrl: l.venueUrl || "",
@@ -182,6 +168,8 @@ export function liveNow({ programmes, lessons } = {}, now = new Date()) {
     ...fromProgrammes,
     ...fromLessons.map((l) => ({
       id: `${l.id}:now`,
+      refId: l.id,
+      sourceId: l.id,
       startsAt: currentSession(l, now),
       title: l.title,
       venueUrl: l.venueUrl,

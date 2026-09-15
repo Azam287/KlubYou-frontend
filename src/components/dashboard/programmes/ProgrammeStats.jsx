@@ -13,7 +13,7 @@ import {
 
 // Makes the detail page answer "is this working?", not just "what's in it".
 // Every figure is derived from members and payments.
-export default function ProgrammeStats({ programme, members, payments, studioSubscribers }) {
+export default function ProgrammeStats({ programme, members, payments, attendance, studioSubscribers }) {
   const buyers = programmeBuyers(members, programme.id);
   const revenue = programmeRevenue(payments, programme.id);
   const sales = programmeSales(payments, programme.id);
@@ -35,7 +35,7 @@ export default function ProgrammeStats({ programme, members, payments, studioSub
   if (isLive(programme)) {
     const left = classesRemaining(programme);
     const next = nextClassLabel(programme);
-    const avg = averageAttendance(programme);
+    const avg = averageAttendance(programme, attendance);
     tiles.push({
       label: "Classes left",
       value: left,
@@ -44,7 +44,7 @@ export default function ProgrammeStats({ programme, members, payments, studioSub
     tiles.push({
       label: "Avg attendance",
       value: avg === null ? "—" : avg,
-      note: avg === null ? "No class has run yet" : "per class held",
+      note: avg === null ? "No class has run yet" : "per class held, through their links",
     });
   } else {
     tiles.push({ label: "Videos", value: videoCount(programme), note: `${programme.sections?.length || 0} sections` });

@@ -20,19 +20,21 @@ export default function SectionFormModal({ open, editing, onClose, onSave }) {
       maxWidth={440}
       footer={
         <>
-          <button className="btn btn-ghost" onClick={handleClose}>
+          <button className="btn btn-ghost" onClick={handleClose} data-tip="Close without saving">
             Cancel
           </button>
-          <button
-            className="btn btn-coral"
-            disabled={!title.trim()}
-            onClick={() => {
-              onSave(title.trim());
-              handleClose();
-            }}
-          >
-            {editing ? "Save name" : "Add section"}
-          </button>
+          <span className="tip-wrap" data-tip={!title.trim() ? "Type a name first" : editing ? "Save the new name" : "Add the section"}>
+            <button
+              className="btn btn-coral"
+              disabled={!title.trim()}
+              onClick={() => {
+                onSave(title.trim());
+                handleClose();
+              }}
+            >
+              {editing ? "Save name" : "Add section"}
+            </button>
+          </span>
         </>
       }
     >

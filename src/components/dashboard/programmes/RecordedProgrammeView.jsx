@@ -57,7 +57,12 @@ export default function RecordedProgrammeView({
         <p className="sec-empty">Nothing here yet. Add a section to start building the curriculum.</p>
       )}
 
-      <button className="btn btn-ghost" style={{ marginTop: 14 }} onClick={onAddSection}>
+      <button
+        className="btn btn-ghost"
+        style={{ marginTop: 14 }}
+        onClick={onAddSection}
+        data-tip="Add a group of videos members work through in order"
+      >
         <Icon name="plus" size={15} strokeWidth={2.2} /> Add section
       </button>
     </div>

@@ -31,19 +31,24 @@ export default function EditDetailsModal({ open, programme, swatches, onClose, o
       title="Edit details"
       footer={
         <>
-          <button className="btn btn-ghost" onClick={onClose}>
+          <button className="btn btn-ghost" onClick={onClose} data-tip="Close without saving">
             Cancel
           </button>
-          <button
-            className="btn btn-coral"
-            disabled={live && !scheduleWindow(form)}
-            onClick={() => {
-              onSave(form);
-              onClose();
-            }}
+          <span
+            className="tip-wrap"
+            data-tip={live && !scheduleWindow(form) ? "Set a start date and number of weeks first" : "Save the changes"}
           >
-            Save changes
-          </button>
+            <button
+              className="btn btn-coral"
+              disabled={live && !scheduleWindow(form)}
+              onClick={() => {
+                onSave(form);
+                onClose();
+              }}
+            >
+              Save changes
+            </button>
+          </span>
         </>
       }
     >

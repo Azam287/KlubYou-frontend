@@ -5,10 +5,12 @@
 // same rows the members page reads — so marking a payment paid there clears
 // "Payment due" here without anyone keeping the two in step.
 
-import { formatDayMonth, sameMonth } from "./datetime";
+import { addDays, formatDayMonth, sameMonth, startOfDay, weekdayOf } from "./datetime";
+import { partsOf, zonedDate } from "./locale";
 import { offersOf } from "./programme";
 import { creatorKeeps, FEE_RATE, money2 } from "./stats";
 import { mailtoFor, paymentLabel, renews } from "./members";
+import { matchesQuery } from "./search";
 
 const time = (iso) => (iso ? new Date(iso).getTime() : NaN);
 
@@ -35,21 +37,17 @@ export const STATUS_FILTERS = [
 // neither the date nor the amount.
 export const PAYOUT_WEEKDAY = 5; // Friday
 
-const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
-
-// The most recent payout day before today (today's hasn't happened yet).
+// Payout days are the studio's Fridays, starting at its midnight.
 export function lastPayoutDay(now = new Date()) {
   const d = startOfDay(now);
-  const back = (d.getDay() - PAYOUT_WEEKDAY + 7) % 7 || 7;
-  d.setDate(d.getDate() - back);
-  return d;
+  const back = (weekdayOf(d) - PAYOUT_WEEKDAY + 7) % 7 || 7;
+  return addDays(d, -back);
 }
 
 // The next payout day, today included.
 export function nextPayoutDay(now = new Date()) {
   const d = startOfDay(now);
-  d.setDate(d.getDate() + ((PAYOUT_WEEKDAY - d.getDay() + 7) % 7));
-  return d;
+  return addDays(d, (PAYOUT_WEEKDAY - weekdayOf(d) + 7) % 7);
 }
 
 /* ---------- the summary ---------- */
@@ -99,14 +97,13 @@ export function matchesPaidFor(payment, value) {
 }
 
 export function filterPayments(payments, { status = "all", access = "all", search = "" } = {}, members = []) {
-  const q = String(search || "").trim().toLowerCase();
   const byId = new Map((members || []).map((m) => [m.id, m]));
   return (payments || []).filter((p) => {
     if (status !== "all" && p.status !== status) return false;
     if (!matchesPaidFor(p, access)) return false;
-    if (!q) return true;
+    if (!String(search || "").trim()) return true;
     const who = byId.get(p.memberId);
-    return !!who && (who.name.toLowerCase().includes(q) || (who.email || "").toLowerCase().includes(q));
+    return !!who && matchesQuery([who.name, who.email], search);
   });
 }
 
@@ -123,12 +120,10 @@ export function sortPayments(payments, key = "date", dir = "desc") {
 const monthsIn = (length) => parseInt(String(length || "1"), 10) || 1;
 
 export function addMonths(iso, n) {
-  const d = new Date(iso);
-  const day = d.getDate();
-  d.setMonth(d.getMonth() + n);
+  const p = partsOf(iso);
   // 31 Jan + 1 month is 28 Feb, not 3 March.
-  if (d.getDate() < day) d.setDate(0);
-  return d.toISOString();
+  const lastDay = partsOf(zonedDate(p.year, p.month + n + 1, 0, 12)).day;
+  return zonedDate(p.year, p.month + n, Math.min(p.day, lastDay), p.hour, p.minute, p.second).toISOString();
 }
 
 // How many months one payment buys: a plan's length, or a subscription offer's.

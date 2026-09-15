@@ -3,7 +3,7 @@
 A creator dashboard prototype: **Vite + React 19 + react-router 6 (HashRouter),
 plain CSS, no backend.** All data is in-memory React state seeded from
 `src/data/mockData.js`; it resets on reload. British English throughout
-(programme, colour, £).
+(programme, colour). Money is in the studio's currency (`money()`, default £).
 
 ## Commands
 
@@ -23,6 +23,9 @@ npm run build
   rejected**. Don't reintroduce a rejected design; raise it with the user.
 - `docs/architecture.md` — where things live, data flow, shared components, CSS pitfalls.
 - `docs/testing.md` — how the tests work and what they can't see.
+- `docs/backend/` — the proposed backend (not built): data model, API mapped to
+  every store action, flows, build order and open product questions. A change to
+  a rule or store action should be checked against it, and it updated if needed.
 
 ## Rules of this codebase
 
@@ -42,13 +45,25 @@ npm run build
    is wrong for an "everything" plan (its array is empty) — this bug has shipped three times.
 6. **Tooltips are `data-tip="…"`, not `title`.** Disabled buttons need a
    `<span className="tip-wrap" data-tip="why it's disabled">` wrapper.
-   Icon-only buttons also need `aria-label`. Every button on the membership page
-   and My page must have one (enforced by `tests/tooltips.test.jsx` and
-   `tests/mypage.test.jsx`).
+   Icon-only buttons also need `aria-label`. **Every** button, link, ⋯ menu and
+   menu item in the app must have one — `tests/tooltips-app.test.js` scans all of
+   `src/components` and fails on any that don't, or on a native `title` tooltip.
 7. **`usePageHeader(title, subtitle, action)` — memoize `action`** or it loops.
 8. **Use the CSS tokens** (`--ink`, `--coral`, `--line`, …) from `globals.css`.
    Amber means "worth a look"; there is no red.
-9. **UI copy says what will happen**, in plain words, including the consequence
+9. **Searching a list uses `SearchInput` + `matchesQuery` (`lib/search.js`)**,
+   never a hand-rolled `includes()` — so case, accents and multi-word searches
+   behave the same on every page. See docs/domain.md → Search for where it's
+   offered and where it deliberately isn't.
+10. **Send the members' link, never the hosting link.** A class or lesson's Zoom /
+   Meet / YouTube address is only where its KlubYou link redirects; copy buttons
+   use `joinLinkOf` / `JoinLink`, or attendance can't be counted. Classes attended
+   are `attendance` records (`lib/attendance.js`) — don't store a count.
+11. **Times are the studio's, money is the studio's.** Read dates through
+   `lib/datetime.js` (never `getHours`, `getDay`, `setDate`, `new Date(y, m, d)`,
+   `toLocaleDateString` — they use the browser's zone; a test scans for them).
+   Write amounts with `money()` / `money2()` / `offerPrice()`, never a literal `£`.
+12. **UI copy says what will happen**, in plain words, including the consequence
    ("Unpublish — members stop seeing it"). Match the existing voice.
 
 ## Editing

@@ -1,7 +1,10 @@
 import { useState } from "react";
 import Modal from "../../common/Modal";
 import Icon from "../../common/Icon";
+import SearchInput from "../../common/SearchInput";
+import { matchesQuery, needsSearch } from "../../../lib/search";
 import { money } from "../../../lib/stats";
+import { currencySymbol } from "../../../lib/locale";
 import {
   bundleSummary,
   planIsEverything,
@@ -57,7 +60,7 @@ export default function PlanFormModal({
     : months < 1
       ? "Set a length of at least one month"
       : amount <= 0
-        ? "Set a price above £0"
+        ? `Set a price above ${money(0)}`
         : listTooLow
           ? "The full price can't be lower than the price"
           : "";
@@ -66,6 +69,16 @@ export default function PlanFormModal({
   // Only published things can be put in a plan.
   const liveBundles = publishedOnly(bundles);
   const liveExtras = publishedOnly(features);
+
+  // A search over bundles and benefits once there are enough to need one.
+  // Ticked ones it hides are counted, so a plan never looks emptier than it is.
+  const [search, setSearch] = useState("");
+  const searchable = needsSearch(liveBundles.length + liveExtras.length);
+  const pickBundles = liveBundles.filter((b) => matchesQuery([b.name, b.description], search));
+  const pickExtras = liveExtras.filter((f) => matchesQuery([f.title, f.detail], search));
+  const hiddenTicked =
+    liveBundles.filter((b) => (form.bundles || []).includes(b.id) && !pickBundles.includes(b)).length +
+    liveExtras.filter((f) => (form.extras || []).includes(f.id) && !pickExtras.includes(f)).length;
   const noBundles = !everything && planIsHollow(preview, bundles, programmes, lessons);
   const chosenExtras = (form.extras || []).length;
   // Nothing at all — not merely "no content". Extras alone are a plan too.
@@ -179,7 +192,7 @@ export default function PlanFormModal({
               />
             </div>
             <div className="ctrl">
-              <label className="lbl">Price (£)</label>
+              <label className="lbl">Price ({currencySymbol().trim()})</label>
               <input
                 className="field"
                 type="number"
@@ -192,7 +205,7 @@ export default function PlanFormModal({
           </div>
 
           <div className="ctrl">
-            <label className="lbl">Full price (£, optional)</label>
+            <label className="lbl">Full price ({currencySymbol().trim()}, optional)</label>
             <input
               className="field"
               type="number"
@@ -257,11 +270,28 @@ export default function PlanFormModal({
             </div>
           ) : (
             <>
+              {searchable && (
+                <>
+                  <SearchInput
+                    className="in-form"
+                    value={search}
+                    onChange={setSearch}
+                    placeholder="Search bundles and benefits"
+                  />
+                  {hiddenTicked > 0 && (
+                    <p className="hint">
+                      {hiddenTicked} ticked {hiddenTicked === 1 ? "item is" : "items are"} hidden by your search — still in the plan.
+                    </p>
+                  )}
+                </>
+              )}
               <div className="ctrl">
                 <label className="lbl">Bundles</label>
-                {liveBundles.length ? (
+                {liveBundles.length && !pickBundles.length ? (
+                  <p className="hint">No bundles match your search.</p>
+                ) : liveBundles.length ? (
                   <div className="bundle-pick">
-                    {liveBundles.map((b) => {
+                    {pickBundles.map((b) => {
                       const on = (form.bundles || []).includes(b.id);
                       return (
                         <label className={`bundle-row${on ? " on" : ""}`} key={b.id}>
@@ -291,9 +321,11 @@ export default function PlanFormModal({
                   missing silently the moment its data didn't arrive. */}
               <div className="ctrl">
                 <label className="lbl">Extra benefits</label>
-                {liveExtras.length ? (
+                {liveExtras.length && !pickExtras.length ? (
+                  <p className="hint">No extra benefits match your search.</p>
+                ) : liveExtras.length ? (
                   <div className="bundle-pick">
-                    {liveExtras.map((f) => {
+                    {pickExtras.map((f) => {
                       const on = (form.extras || []).includes(f.id);
                       return (
                         <label className={`bundle-row${on ? " on" : ""}`} key={f.id}>

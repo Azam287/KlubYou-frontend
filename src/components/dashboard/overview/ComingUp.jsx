@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
 import { formatWhen } from "../../../lib/datetime";
+import { attendancePathOf, sessionIdOf } from "../../../lib/sessions";
 
 const DOT = { programme: "prog", lesson: "lesson", oneoff: "once" };
 
 // What's on right now and next, from the same timetable the Schedule page
 // builds — programme classes and everyday lessons alike.
-export default function ComingUp({ live, next }) {
+export default function ComingUp({ live, next, cameAt }) {
   return (
     <div className="cardbox">
       <div className="box-h">
@@ -25,7 +26,20 @@ export default function ComingUp({ live, next }) {
               </span>
               <span className="upc-t">
                 <b>{e.title}</b>
-                <small>{e.sourceName}</small>
+                <small>
+                  {e.sourceName}
+                  {cameAt && (
+                    <>
+                      {" · "}
+                      <Link
+                        to={attendancePathOf(sessionIdOf(e))}
+                        data-tip="Watch people arrive, and mark anyone who came another way"
+                      >
+                        {cameAt(e)} in so far
+                      </Link>
+                    </>
+                  )}
+                </small>
               </span>
             </li>
           ))}

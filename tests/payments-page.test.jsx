@@ -1,6 +1,7 @@
 // The payments page as rendered. Rules live in payments.test.js.
 import { renderToString } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
+import { formatDay } from "../src/lib/datetime";
 import { ok, done, source, clean } from "./harness";
 import PaymentsPage from "../src/components/dashboard/payments/PaymentsPage.jsx";
 import PaymentTable from "../src/components/dashboard/payments/PaymentTable.jsx";
@@ -34,7 +35,7 @@ const s = paymentSummary(PAY);
 ok("four figures, in the same strip as members and membership", (page.match(/class="msum-b"/g) || []).length === 4 && !page.includes("cardbox stat"));
 ok("received this month, split by where it came from", page.includes(">Received this month<") && page.includes(`${money(s.fromMemberships)} memberships · ${money(s.fromProgrammes)} programmes`));
 ok("pending, with how many", page.includes(">Pending<") && page.includes(`${s.pendingCount} payments`));
-ok("the next payout has a real date", page.includes(">Next payout<") && page.includes(s.payout.on.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }))
+ok("the next payout has a real date", page.includes(">Next payout<") && page.includes(formatDay(s.payout.on)) && /Fri \d+ [A-Z][a-z]{2}/.test(formatDay(s.payout.on))
   && !page.includes("Fri, after fees"));
 ok("the fee", page.includes(">KlubYou fee (10%)<"));
 

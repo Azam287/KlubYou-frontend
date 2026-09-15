@@ -1,4 +1,4 @@
-import Icon from "../../common/Icon";
+import SearchInput from "../../common/SearchInput";
 import { STATE_FILTERS } from "../../../lib/members";
 import AccessFilter from "../shared/AccessFilter";
 
@@ -42,15 +42,12 @@ export default function MemberFilters({
         includeNone
       />
 
-      <div className="search">
-        <Icon name="search" size={16} color="#5B5470" />
-        <input
-          value={search}
-          onChange={(e) => onSearch(e.target.value)}
-          placeholder="Search by name or email"
-          aria-label="Search members by name or email"
-        />
-      </div>
+      <SearchInput
+        value={search}
+        onChange={onSearch}
+        placeholder="Search by name or email"
+        label="Search members by name or email"
+      />
     </div>
   );
 }

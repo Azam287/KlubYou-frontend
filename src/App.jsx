@@ -20,6 +20,9 @@ import PaymentsPage from "./components/dashboard/payments/PaymentsPage";
 import ClassesPage from "./components/dashboard/classes/ClassesPage";
 import SchedulePage from "./components/dashboard/schedule/SchedulePage";
 import MembershipPage from "./components/dashboard/membership/MembershipPage";
+import AttendancePage from "./components/dashboard/attendance/AttendancePage";
+import SessionAttendancePage from "./components/dashboard/attendance/SessionAttendancePage";
+import SettingsPage from "./components/dashboard/settings/SettingsPage";
 
 export default function App() {
   return (
@@ -49,6 +52,9 @@ export default function App() {
                 <Route path="payments" element={<PaymentsPage />} />
                 <Route path="classes" element={<ClassesPage />} />
                 <Route path="schedule" element={<SchedulePage />} />
+                <Route path="attendance" element={<AttendancePage />} />
+                <Route path="attendance/:sessionId" element={<SessionAttendancePage />} />
+                <Route path="settings" element={<SettingsPage />} />
                 <Route path="membership" element={<MembershipPage />} />
               </Route>
 

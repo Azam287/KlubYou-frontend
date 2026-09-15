@@ -93,9 +93,14 @@ Also: React escapes `'` as `&#x27;` and `&` as `&amp;` — run HTML through
 | ----------------------------- | ------------------------------------------------------------------ |
 | `membership.test.js`          | Membership model: everything vs chosen, drafts, order, pricing     |
 | `membership-page.test.jsx`    | Membership page regressions: table, preview, plan form, data actions |
+| `tooltips-app.test.js`        | Every button, link, menu and menu item in `src/components` has a tooltip; no native `title` tooltips |
 | `tooltips.test.jsx`           | Every membership control has a tooltip; placement maths            |
+| `settings.test.jsx`           | Zone maths (summer time, half-hour zones), every time rule in the studio's zone, a scan for browser-clock calls, currency, settings rules, Settings page |
+| `attendance.test.jsx`         | Members' links, session ids, who a session is for, demo records, marking, session reports, quiet members, Attendance pages |
 | `members.test.js`             | Member rules: access, status, renewal, activity, filters, actions, payment labels |
 | `members-page.test.jsx`       | Members page: summary, filters, table, details, gift/voucher/stop, payments table |
+| `overview.test.jsx`           | Overview: earnings comparison, who's here, attention list, coming up, activity, page |
+| `search.test.jsx`             | The search rule, the search box, and where search appears            |
 | `paging.test.jsx`             | Paging rules and the Pagination bar                                |
 | `payments.test.js`            | Payment rules: summary, payouts, filters, marking paid, emails, CSV |
 | `payments-page.test.jsx`      | Payments page: summary, filters, table, actions, export, member details |

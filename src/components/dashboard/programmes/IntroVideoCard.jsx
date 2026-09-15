@@ -17,7 +17,11 @@ export default function IntroVideoCard({ programme, onEdit, onCopyLink }) {
           <b>No intro video yet</b>
           <small>People decide from this before they buy. Add a short trailer.</small>
         </div>
-        <button className="btn btn-coral btn-sm" onClick={onEdit}>
+        <button
+          className="btn btn-coral btn-sm"
+          onClick={onEdit}
+          data-tip="Add the trailer people watch before they buy"
+        >
           Add intro video
         </button>
       </div>
@@ -33,10 +37,19 @@ export default function IntroVideoCard({ programme, onEdit, onCopyLink }) {
         <b>Intro video</b>
         <small className="intro-url">{url}</small>
       </div>
-      <button className="copy" title="Copy intro link" onClick={() => onCopyLink(url)}>
+      <button
+        className="copy"
+        aria-label="Copy intro video link"
+        data-tip="Copy the intro video link"
+        onClick={() => onCopyLink(url)}
+      >
         <Icon name="copy" size={15} strokeWidth={1.7} />
       </button>
-      <button className="btn btn-ghost btn-sm" onClick={onEdit}>
+      <button
+        className="btn btn-ghost btn-sm"
+        onClick={onEdit}
+        data-tip="Change the intro video link"
+      >
         Change
       </button>
     </div>

@@ -46,6 +46,7 @@ export default function ReadinessChecklist({ programme, onPublish, onFixLinks })
               </div>
               {item.key === "links" && item.missing > 0 && (
                 <button
+                  data-tip={item.optional ? "Add the first missing link — members need them to join" : "Go to the first one that's missing"}
                   className={`btn btn-sm ${item.optional ? "btn-ghost" : "btn-coral"}`}
                   onClick={onFixLinks}
                 >
@@ -58,9 +59,14 @@ export default function ReadinessChecklist({ programme, onPublish, onFixLinks })
         })}
       </div>
 
-      <button className="btn btn-coral btn-block ready-go" disabled={!canPublish} onClick={onPublish}>
-        Publish programme
-      </button>
+      <span
+        className="tip-wrap ready-go-wrap"
+        data-tip={canPublish ? "Put it on your page and on sale" : `Not yet — ${(blocker?.label || "finish the checklist").toLowerCase()}`}
+      >
+        <button className="btn btn-coral btn-block ready-go" disabled={!canPublish} onClick={onPublish}>
+          Publish programme
+        </button>
+      </span>
       {blocker && <p className="hint ready-why">{blocker.detail}</p>}
     </div>
   );

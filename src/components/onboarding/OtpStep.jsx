@@ -39,9 +39,10 @@ export default function OtpStep() {
         ))}
       </div>
       <p className="foot-note" style={{ textAlign: "left", margin: ".3rem 0 1.3rem" }}>
-        Didn't get it? <button type="button">Resend code</button>
+        Didn't get it? <button type="button" data-tip="Send a new code to your email">Resend code</button>
       </p>
       <button
+        data-tip="Check the code and continue"
         type="button"
         className="btn btn-primary btn-block"
         onClick={() => navigate("/onboarding/channel")}

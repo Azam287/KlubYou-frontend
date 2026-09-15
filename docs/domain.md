@@ -214,7 +214,7 @@ member" shows what members see.
 
 ## My page — `src/lib/page.js`
 
-The creator's public page (`klubyou.co/<handle>`), styled like an influencer's
+The creator's public page (`klubyou.co/<handle>`, changed in Settings), styled like an influencer's
 link-in-bio page. `#/dashboard/page` is an editor on the left and a live
 preview on the right.
 
@@ -314,6 +314,58 @@ no button.
 
 ---
 
+## Attendance — `src/lib/attendance.js`, `src/lib/sessions.js`
+
+Every live thing — an everyday lesson, a one-off, a class in a live programme —
+has a **members' link** of KlubYou's own, and that link is what gets sent out.
+The Zoom / Meet / YouTube address (`venueUrl`, `venue.url`, "hosting link") is
+only where the link sends people; members never see it, because a click on it
+can't be counted.
+
+- **The link** (`joinLinkOf`): `join.klubyou.co/<handle>/<lessonId>` for a lesson,
+  `…/<programmeId>/<classId>` for a class. Built from ids, so renaming doesn't
+  break a link already sent. A **lesson has one link for every session**; which
+  session a click counts for is decided by when it happens. Each member has a
+  **personal copy** (`personalLinkOf`, `?m=`), which is what identifies them.
+- **The page behind the link lives on its own domain, not in this app.** It opens
+  `JOIN_OPENS_MINS` (15) before the start and closes after the hour a session
+  counts as on. The dashboard hands links out and reads back who came.
+- **A session** is one run: `class:<programmeId>:<classId>` or
+  `lesson:<lessonId>:<yyyy-mm-dd>` (`sessionIdOf`, resolved by `sessionOf`).
+- **Stored:** only `attendance` records — `{ id, sessionId, memberId, at, via:
+  "link" | "marked" }`, one per person per session. Going through twice keeps the
+  first (`withJoin`). The creator can **mark present** (a record at the start
+  time, `via: "marked"`) or **mark absent** (removes the record, a link join
+  included) from the session's register — once it has started. Deleting a class
+  or lesson keeps its records: the people still came.
+- **Who a session is for** (`canAttend`): they'd joined by the end of it, their
+  paid time hadn't run out before it started, and what they bought opens it — a
+  programme's buyers, plans that open it through a published bundle
+  (`planHasProgramme` / `planHasLesson`). **A lesson no published bundle names is
+  open to every member on a plan.** Drafts are for no one. Pausing a lesson
+  doesn't change who could have come before.
+- **Worked out** (`sessionReport`): came, expected, turn-up (came of expected;
+  someone marked who has no access is listed but doesn't count towards it),
+  late (a link join more than `LATE_MINS` = 5 after the start; a mark is never
+  late), on time, first time (nothing of theirs earlier), marked by you, and
+  arrivals in 5-minute steps. `historyOf` gives the same lesson's (or
+  programme's) recent sessions; `quietMembers` those who could have come in the
+  last 14 days and didn't.
+- **Not shown: how long anyone stayed.** A redirect can't see it; watch time
+  would need Zoom or YouTube connected. The session page says so.
+
+**Pages:** `#/dashboard/attendance` — on now, four figures for the last 4 weeks,
+"Haven't come in 14 days" with an email button, and every session (filter by
+lesson or programme, search, paged). `?for=lesson:<id>` or `programme:<id>`
+opens it filtered. `#/dashboard/attendance/<sessionId>` — the link and where it
+sends people, the figures, arrivals, recent sessions, and the register (copy a
+member's own link, email it, mark present/absent). Reached from lesson cards
+("Last time: 5 of 8 came", menu → See attendance), programme classes ("7 of 12
+came", menu), the schedule (a started entry opens its attendance) and the
+overview's "on now".
+
+---
+
 ## Members — `src/lib/members.js`
 
 `#/dashboard/members`. A member stores **what they bought, not a description of
@@ -326,7 +378,8 @@ it**:
 | `"none"`      | nothing                          | A **lead**: signed up on the page, hasn't bought |
 
 Plus `joinedAt`, `renewsAt` (null for lifetime), `autoRenew` (false once
-stopped), `status`, `attended` (classes), `watched` (videos), `vouchers`. Names,
+stopped), `status`, `watched` (videos), `vouchers`. **Classes attended aren't
+stored on the member** — they're attendance records (see Attendance). Names,
 prices and lengths are always read from the plan or offer, so a rename reaches
 every member. **Never store a plan length, a label or initials on a member.**
 
@@ -340,10 +393,12 @@ every member. **Never store a plan length, a label or initials on a member.**
   *Ending* (renewal stopped) → *Renews soon* (within 7 days) → *Active*.
 - **Renewal** (`renewalOf`): "Lifetime access", "Renews in 3 days", "Ends 12 Oct",
   "Ended 4 Aug".
-- **Activity** (`progressOf`): a **recorded** programme counts videos watched out
-  of its active videos; a **live** programme counts classes attended out of
-  classes held since they joined; a **membership** counts classes attended with
-  no "out of" (everyday lessons run every day, so there's no fair total).
+- **Activity** (`progressOf`, needs `attendance` in its ctx): a **recorded**
+  programme counts videos watched out of its active videos; a **live** programme
+  counts its classes they have a record for, out of classes held since they
+  joined; a **membership** counts every class they have a record for, with no
+  "out of" (everyday lessons run every day, so there's no fair total). The member
+  details also say when they last came.
 - **Stopping renewal** turns `autoRenew` off: access runs to `renewsAt`, then
   ends. It asks for confirmation and can be resumed until then. Works for plans
   and programme subscriptions alike.
@@ -393,18 +448,85 @@ members page reads the **same rows**: a pending payment is what makes a member
 - **Export CSV** downloads the payments currently shown (date, member, email,
   for, amount, you keep, fee, status).
 
-## Overview — `src/lib/stats.js`
+## Overview — `src/lib/overview.js`
 
-Every headline number (member counts, plan mix, earnings this month, earnings
-chart, per-programme revenue, attendance) is computed from `members` and
-`payments`, so it can't disagree with those pages.
+`#/dashboard`. **Nothing on it is stored** — it reads the same members, payments,
+plans, programmes and lessons as the other pages, through their own rules
+(`memberSummary`, `paymentSummary`), so it can't disagree with them.
 
-## Dates in mock data — `src/lib/datetime.js`
+- **Summary** (each figure links to its page): active members (+ joined this
+  week), earned this month compared with **the same day last month**
+  (`earningsToDate` — comparing a part month with a whole one made every month
+  look like it was falling), next payout, retention (+ payments due).
+- **Needs your attention** (`attentionItems`), problems first: payments that
+  haven't gone through, classes this week with no joining link, plans on sale
+  that open nothing, memberships renewing or ending this week, programmes ready
+  to publish, unpublished My page changes, new leads. Each links to where it's
+  fixed; an empty list says "Nothing needs you right now".
+- **Coming up** (`comingUp`): on now, then the next sessions this week, from the
+  schedule's own timetable.
+- **Earnings** chart: six months, points titled with month and amount.
+- **Who's here** (`membersByPlan`): people with access by plan name, programme
+  buyers, leads. (Was "Plan mix", which lumped plans together.)
+- **Recent activity** (`recentActivity`): payments in and not through, sign-ups,
+  vouchers, with real relative times. (Was a hand-written feed —
+  `initialActivity` — that was wrong the day after it was written.)
+
+## Search — `src/lib/search.js`
+
+One rule everywhere (`matchesQuery`): case and accents don't matter, and **every
+word typed must appear** somewhere in the item. Where it's offered:
+
+- **Page lists that grow:** Programmes (name, description, type), Everyday lessons
+  (title, days, time), Membership → Bundles (name, description, and the names of
+  what's inside) and Extra benefits (name, detail), Members (name, email),
+  Payments (member name, email).
+- **Pick-lists in forms**, only once they have more than `SEARCH_THRESHOLD` (6)
+  choices: programmes and lessons in the bundle form, bundles and benefits in the
+  plan form, programmes on My page. Ticked items a search hides are counted
+  ("2 ticked items are hidden by your search — still in the bundle").
+- **Not offered:** the Membership plans table (rows are ordered by position —
+  reordering inside a filtered list would mislead), the schedule (a week, not a
+  list), and videos or classes inside a programme (a set order).
+
+A search that finds nothing says what was searched for and offers "Clear
+search". Switching Membership tabs clears its search.
+
+## Settings — `src/lib/settings.js`, `src/lib/locale.js`
+
+`#/dashboard/settings`. Four settings, stored on `studio`, edited as a draft and
+saved together (Discard puts back what's saved):
+
+| Setting | Rules |
+| ------- | ----- |
+| `name` | Required, up to 60 characters. Saving also updates the **published** page's name — it isn't a My page draft |
+| `handle` (page address, `klubyou.co/<handle>`) | 3–30 characters, lowercase letters, numbers and hyphens, no hyphen at either end, not taken (`takenHandles`); typed capitals are lowered. Saving warns that links already shared stop working, and rewrites every programme `shareUrl` that carries the old address (`movedShareUrl`). Members' join links follow automatically (they're derived) |
+| `currency` | One of `CURRENCIES`. Every price is written with `money()` / `money2()` / `offerPrice()` in it. **Amounts aren't converted** — 40 stays 40 — and the confirmation says so |
+| `timezone` | Any IANA zone the browser knows, grouped by region, with its offset and the time there now; "Use this device's time zone" when different |
+
+**The studio's time zone is the clock for everything.** Class and lesson times,
+"today", the schedule's week (Monday midnight), run windows, "on now", this
+month's earnings, payout Friday, renewal dates, attendance days — all read the
+wall clock in `studio.timezone`, whatever zone the viewer's browser is in.
+Changing it: everyday lessons and one-offs keep their clock time (they store
+"07:00" and a date), programme classes keep their instant (they store ISO
+`startsAt`), so their shown times move. The confirmation says both.
+
+Saving anything with a consequence (address, currency, zone) shows what will
+happen first; a rename alone just saves.
+
+## Dates — `src/lib/datetime.js`, `src/lib/locale.js`
+
+Every wall-clock reading goes through `datetime.js` (`formatTime`, `dayKeyOf`,
+`startOfDay`, `addDays`, `atClock`, `weekdayOf`, `startOfMonth`, `formatDay`…),
+which uses the studio's zone via `partsOf` / `zonedDate` in `locale.js`. **Never
+use `getHours`, `getDay`, `setDate`, `new Date(y, m, d)` or `toLocaleDateString`**
+— they answer in the browser's zone. A test scans `src/` for them.
 
 Mock dates are generated **relative to now** (`atOffset(days, hour)`,
-`monthsAgo`, `monthsAhead`), so the demo never goes stale. A value from
-`<input type="date">` is a local calendar day — build it with `fromDayInput`,
-not `new Date("2026-09-14")`, which lands on the previous day west of UTC.
+`monthsAgo`, `monthsAhead`), in the studio's zone, so the demo never goes stale.
+A value from `<input type="date">` is a calendar day in the studio's zone — build
+it with `fromDayInput`, not `new Date("2026-09-14")`, which is UTC midnight.
 
 ---
 
@@ -417,6 +539,9 @@ not `new Date("2026-09-14")`, which lands on the previous day west of UTC.
 | Video               | An item inside a recorded programme's section                      | lesson                 |
 | Everyday lesson     | A repeating session included with the subscription                 | daily class            |
 | One-off class       | A single-date session included with the subscription               |                        |
+| Members' link       | KlubYou's link to a class or lesson; counts who came, then redirects | joining link (for this) |
+| Hosting link        | The Zoom / Meet / YouTube address the members' link sends people to | members' link          |
+| Session             | One run of a lesson (one day) or one class                         | occurrence (in UI copy) |
 | Run window          | A live programme's start date + number of weeks                    | duration               |
 | Plan                | A membership product: length + price + what it opens               | tier, package, studio subscription |
 | Lead                | Signed up on the page but hasn't bought anything                   | visitor                |

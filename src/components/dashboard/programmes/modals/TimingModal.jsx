@@ -42,10 +42,18 @@ export default function TimingModal({ open, onClose, onSave, initialStartsAt, se
       title="Change class timing"
       footer={
         <>
-          <button className="btn btn-ghost" onClick={handleClose}>
+          <button
+            className="btn btn-ghost"
+            onClick={handleClose}
+            data-tip="Close without changing anything"
+          >
             Cancel
           </button>
-          <button className="btn btn-coral" onClick={handleSave}>
+          <button
+            className="btn btn-coral"
+            onClick={handleSave}
+            data-tip="Save the new date and time"
+          >
             Save changes
           </button>
         </>
@@ -55,10 +63,18 @@ export default function TimingModal({ open, onClose, onSave, initialStartsAt, se
         <div className="ctrl">
           <label className="lbl">Apply to</label>
           <div className="segbtns">
-            <button className={`seg${scope === "one" ? " on" : ""}`} onClick={() => setScope("one")}>
+            <button
+              className={`seg${scope === "one" ? " on" : ""}`}
+              onClick={() => setScope("one")}
+              data-tip="Change only this class"
+            >
               This class only
             </button>
-            <button className={`seg${scope === "series" ? " on" : ""}`} onClick={() => setScope("series")}>
+            <button
+              className={`seg${scope === "series" ? " on" : ""}`}
+              onClick={() => setScope("series")}
+              data-tip="Change every class in the series"
+            >
               All {seriesCount} in the series
             </button>
           </div>

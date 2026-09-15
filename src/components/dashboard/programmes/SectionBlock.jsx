@@ -39,20 +39,51 @@ export default function SectionBlock({
           {videos.length} video{videos.length === 1 ? "" : "s"}
         </span>
         <div className="lmove">
-          <button className="movebtn" disabled={isFirst} title="Move section up" onClick={() => onMoveSection(section, -1)}>
-            <Icon name="chevronUp" size={15} strokeWidth={2.2} />
-          </button>
-          <button className="movebtn" disabled={isLast} title="Move section down" onClick={() => onMoveSection(section, 1)}>
-            <Icon name="chevronDown" size={15} strokeWidth={2.2} />
-          </button>
+          <span className="tip-wrap" data-tip={isFirst ? "Already the first section" : "Move this section up"}>
+            <button
+              className="movebtn"
+              disabled={isFirst}
+              aria-label="Move section up"
+              onClick={() => onMoveSection(section, -1)}
+            >
+              <Icon name="chevronUp" size={15} strokeWidth={2.2} />
+            </button>
+          </span>
+          <span className="tip-wrap" data-tip={isLast ? "Already the last section" : "Move this section down"}>
+            <button
+              className="movebtn"
+              disabled={isLast}
+              aria-label="Move section down"
+              onClick={() => onMoveSection(section, 1)}
+            >
+              <Icon name="chevronDown" size={15} strokeWidth={2.2} />
+            </button>
+          </span>
         </div>
         <KebabMenu
           size="sm"
+          tip="Add a video, rename or delete this section"
           items={[
-            { label: "Add video", icon: "plus", onClick: () => setDraft({ ...emptyDraft }) },
-            { label: "Rename section", icon: "link", onClick: () => onRenameSection(section) },
+            {
+              label: "Add video",
+              icon: "plus",
+              tip: "Add a video to the end of this section",
+              onClick: () => setDraft({ ...emptyDraft }),
+            },
+            {
+              label: "Rename section",
+              icon: "link",
+              tip: "Change the section's name",
+              onClick: () => onRenameSection(section),
+            },
             null,
-            { label: "Delete section", icon: "trash", danger: true, onClick: () => onDeleteSection(section) },
+            {
+              label: "Delete section",
+              icon: "trash",
+              danger: true,
+              tip: "Delete the section and the videos in it — asks first",
+              onClick: () => onDeleteSection(section),
+            },
           ]}
         />
       </div>
@@ -106,15 +137,27 @@ export default function SectionBlock({
             onChange={(e) => setDraft({ ...draft, duration: e.target.value })}
             onKeyDown={(e) => e.key === "Enter" && commit()}
           />
-          <button className="btn btn-coral btn-sm" onClick={commit}>
+          <button
+            className="btn btn-coral btn-sm"
+            onClick={commit}
+            data-tip="Add this video to the section"
+          >
             Add
           </button>
-          <button className="btn btn-ghost btn-sm" onClick={() => setDraft(null)}>
+          <button
+            className="btn btn-ghost btn-sm"
+            onClick={() => setDraft(null)}
+            data-tip="Stop adding videos"
+          >
             Done
           </button>
         </div>
       ) : (
-        <button className="addrow" onClick={() => setDraft({ ...emptyDraft })}>
+        <button
+          className="addrow"
+          onClick={() => setDraft({ ...emptyDraft })}
+          data-tip="Add another video to this section"
+        >
           <Icon name="plus" size={15} strokeWidth={2.2} /> Add another video
         </button>
       )}

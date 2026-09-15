@@ -5,6 +5,9 @@ import { useAppData } from "../../../context/AppDataContext";
 import { money, monthlyEarnings } from "../../../lib/stats";
 import { memberSummary } from "../../../lib/members";
 import { paymentSummary } from "../../../lib/payments";
+import { formatDay } from "../../../lib/datetime";
+import { recordsFor } from "../../../lib/attendance";
+import { sessionIdOf } from "../../../lib/sessions";
 import {
   attentionItems,
   comingUp,
@@ -32,6 +35,7 @@ export default function OverviewPage() {
     everydayLessons,
     bundles,
     publishedPage,
+    attendance,
   } = useAppData();
   usePageHeader("Overview", `Welcome back, ${studio.ownerName} — here's how your studio is doing.`);
 
@@ -52,6 +56,9 @@ export default function OverviewPage() {
       activity: recentActivity({ members, payments, plans: studioPlans, programmes }, now.getTime()),
     };
   }, [members, payments, studioPlans, programmes, everydayLessons, bundles, studio, publishedPage]);
+
+  // How many are in a session on now, counted from their links.
+  const cameAt = (entry) => recordsFor(sessionIdOf(entry), attendance).length;
 
   const { people, toDate } = view;
   const change =
@@ -77,9 +84,7 @@ export default function OverviewPage() {
         <Link className="msum-b" to="/dashboard/payments" data-tip="Paid out every Friday, after the fee — open payments">
           <span>Next payout</span>
           <b>{money(view.money.payout.amount)}</b>
-          <small className="msum-sub">
-            {view.money.payout.on.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}
-          </small>
+          <small className="msum-sub">{formatDay(view.money.payout.on)}</small>
         </Link>
         <Link className="msum-b" to="/dashboard/members" data-tip="Active members out of everyone who has ever paid — open members">
           <span>Retention</span>
@@ -92,7 +97,7 @@ export default function OverviewPage() {
 
       <div className="grid2">
         <AttentionList items={view.attention} />
-        <ComingUp live={view.upcoming.live} next={view.upcoming.next} />
+        <ComingUp live={view.upcoming.live} next={view.upcoming.next} cameAt={cameAt} />
       </div>
 
       <div className="grid2 ov-row">

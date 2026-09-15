@@ -3,6 +3,8 @@ import Modal from "../../common/Modal";
 import { bundleSummary, isEmptyBundle, toggleInList } from "../../../lib/membership";
 import { isPublished } from "../../../lib/programme";
 import { patternLabel, repeats, timeLabel } from "../../../lib/everyday";
+import { matchesQuery, needsSearch } from "../../../lib/search";
+import SearchInput from "../../common/SearchInput";
 
 const PROGRAMME_LABEL = { live: "Live programme", recorded: "Recorded programme" };
 const blank = { name: "", description: "", programmes: [], lessons: [] };
@@ -14,6 +16,18 @@ export default function BundleFormModal({ open, editing, programmes = [], lesson
   const liveProgrammes = (programmes || []).filter(isPublished);
   const liveLessons = (lessons || []).filter((l) => l.active !== false);
   const empty = isEmptyBundle(form, programmes, lessons);
+
+  // A search over both lists once there are enough to need one. Ticked items a
+  // search hides are counted, so nothing looks unticked just by being filtered out.
+  const [search, setSearch] = useState("");
+  const searchable = needsSearch(liveProgrammes.length + liveLessons.length);
+  const pickProgrammes = liveProgrammes.filter((p) => matchesQuery([p.name, PROGRAMME_LABEL[p.type]], search));
+  const pickLessons = liveLessons.filter((l) =>
+    matchesQuery([l.title, repeats(l) ? patternLabel(l) : "one-off", timeLabel(l.time)], search)
+  );
+  const hiddenTicked =
+    liveProgrammes.filter((p) => (form.programmes || []).includes(p.id) && !pickProgrammes.includes(p)).length +
+    liveLessons.filter((l) => (form.lessons || []).includes(l.id) && !pickLessons.includes(l)).length;
 
   return (
     <Modal
@@ -74,11 +88,30 @@ export default function BundleFormModal({ open, editing, programmes = [], lesson
 
       {/* No "everything" option here: that's a property of a plan. A bundle
           that followed everything would be a second way to say the same thing. */}
-      {liveProgrammes.length > 0 && (
+      {searchable && (
+        <>
+          <SearchInput
+            className="in-form"
+            value={search}
+            onChange={setSearch}
+            placeholder="Search programmes and lessons"
+          />
+          {search.trim() && !pickProgrammes.length && !pickLessons.length && (
+            <p className="hint">Nothing matches &ldquo;{search.trim()}&rdquo;.</p>
+          )}
+          {hiddenTicked > 0 && (
+            <p className="hint">
+              {hiddenTicked} ticked {hiddenTicked === 1 ? "item is" : "items are"} hidden by your search — still in the bundle.
+            </p>
+          )}
+        </>
+      )}
+
+      {pickProgrammes.length > 0 && (
         <div className="ctrl">
           <label className="lbl">Programmes</label>
           <div className="bundle-pick">
-            {liveProgrammes.map((p) => {
+            {pickProgrammes.map((p) => {
               const on = (form.programmes || []).includes(p.id);
               return (
                 <label className={`bundle-row${on ? " on" : ""}`} key={p.id}>
@@ -98,11 +131,11 @@ export default function BundleFormModal({ open, editing, programmes = [], lesson
         </div>
       )}
 
-      {liveLessons.length > 0 && (
+      {pickLessons.length > 0 && (
         <div className="ctrl">
           <label className="lbl">Everyday lessons</label>
           <div className="bundle-pick">
-            {liveLessons.map((l) => {
+            {pickLessons.map((l) => {
               const on = (form.lessons || []).includes(l.id);
               return (
                 <label className={`bundle-row${on ? " on" : ""}`} key={l.id}>

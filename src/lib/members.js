@@ -2,7 +2,8 @@
 //
 // A member stores only what happened — which plan or which programme offer
 // they bought, when they joined, when their paid time runs out, whether it
-// renews, and what they've attended or watched. Everything shown about them is
+// renews, and which videos they've watched. Classes attended are attendance
+// records (lib/attendance.js), not a count on the member. Everything shown about them is
 // worked out here from that and from the plans, programmes and payments it
 // points at, so renaming a plan or repricing an offer reaches every member.
 //
@@ -11,12 +12,14 @@
 //   plan: "programme" → programmeId + offerId (one programme offer)
 //   plan: "none"      → a lead: signed up on the page, hasn't bought
 //   joinedAt, renewsAt (null for lifetime), autoRenew (false once stopped),
-//   status ("active" | "inactive" | "lead"), attended (classes), watched (videos),
+//   status ("active" | "inactive" | "lead"), watched (videos),
 //   vouchers: [{ id, code, percent, createdAt }]
 
 import { formatDayMonth, formatMonthYear } from "./datetime";
-import { allVideos, isLive, isRecorded, offersOf, sortedClasses } from "./programme";
+import { allVideos, isLive, isRecorded, offerPrice, offersOf, sortedClasses } from "./programme";
 import { planLabel, planName, planPrice } from "./membership";
+import { matchesQuery } from "./search";
+import { isClassOf } from "./sessions";
 
 export const DAY = 86400000;
 export const RENEWS_SOON_DAYS = 7;
@@ -61,8 +64,8 @@ export function accessOf(member, { plans = [], programmes = [] } = {}) {
     const detail = !offer
       ? "Programme"
       : offer.kind === "subscription"
-        ? `Programme · ${offer.price}/month`
-        : `Programme · bought once, ${offer.price}`;
+        ? `Programme · ${offerPrice(offer)}/month`
+        : `Programme · bought once, ${offerPrice(offer)}`;
     return { kind: "programme", title: programme.name, detail, programme, offer };
   }
   return { kind: "none", title: "Not bought yet", detail: "Signed up on your page" };
@@ -127,7 +130,7 @@ export function renewalOf(member, ctx = {}, now = Date.now()) {
 // What they've done with what they bought. Live access counts classes; a
 // recorded programme counts videos watched against the videos it has — "4 / 4
 // attended" meant nothing for something you watch.
-export function progressOf(member, { programmes = [] } = {}, now = Date.now()) {
+export function progressOf(member, { programmes = [], attendance = [] } = {}, now = Date.now()) {
   if (member?.plan === "none") return { kind: "none", label: "—" };
 
   if (member.plan === "programme") {
@@ -152,14 +155,18 @@ export function progressOf(member, { programmes = [] } = {}, now = Date.now()) {
       const held = sortedClasses(programme).filter(
         (c) => c.active && time(c.startsAt) <= now && time(c.startsAt) >= joined
       ).length;
-      const done = Math.min(member.attended || 0, held);
+      const done = Math.min(
+        attendance.filter((r) => r.memberId === member.id && isClassOf(r.sessionId, programme.id)).length,
+        held
+      );
       return { kind: "classes", done, total: held, label: held ? `${done} of ${held} classes` : "No classes held yet" };
     }
   }
 
   // A membership opens everyday lessons that run every day, so there's no fair
-  // "out of" — just how many they've come to.
-  const n = member.attended || 0;
+  // "out of" — just how many they've come to. Counted from attendance records
+  // (lib/attendance.js); it used to be a number typed into the member.
+  const n = attendance.filter((r) => r.memberId === member?.id).length;
   return { kind: "attended", done: n, label: n ? `${n} class${n === 1 ? "" : "es"} attended` : "No classes yet" };
 }
 
@@ -201,10 +208,8 @@ export function matchesAccess(member, value) {
   return true;
 }
 
-export const matchesSearch = (member, query) => {
-  const q = String(query || "").trim().toLowerCase();
-  return !q || member.name.toLowerCase().includes(q) || (member.email || "").toLowerCase().includes(q);
-};
+// Name or email, by the shared search rule (lib/search.js).
+export const matchesSearch = (member, query) => matchesQuery([member.name, member.email], query);
 
 export function filterMembers(members, { state = "all", access = "all", search = "" } = {}, ctx = {}, now = Date.now()) {
   return (members || []).filter(

@@ -21,6 +21,9 @@ export default function LiveProgrammeView({
   onToggleActive,
   onDeleteClass,
   onCopyLink,
+  onOpenAttendance,
+  linkOf,
+  reportOf,
   onSetDates,
 }) {
   const live = currentClassOf(programme);
@@ -44,8 +47,9 @@ export default function LiveProgrammeView({
       <UpcomingClassCard
         classItem={headline}
         live={!!live}
+        link={headline ? linkOf(headline) : ""}
+        report={headline ? reportOf(headline) : null}
         onUpdateLink={onEditLink}
-        onCopyLink={onCopyLink}
       />
 
       <div className="cardbox pd-sec">
@@ -86,7 +90,9 @@ export default function LiveProgrammeView({
           </p>
         )}
 
-        <div className="pd-sub">Classes in this programme — each one has its own joining link</div>
+        <div className="pd-sub">
+          Classes in this programme — each has its own members&apos; link, which counts who came
+        </div>
         <div className="clist">
           {classes.length ? (
             classes.map((c) => (
@@ -95,6 +101,9 @@ export default function LiveProgrammeView({
                 classItem={c}
                 isUpcoming={headline?.id === c.id}
                 isLive={live?.id === c.id}
+                report={reportOf(c)}
+                onCopyLink={onCopyLink}
+                onOpenAttendance={onOpenAttendance}
                 onEditLink={onEditLink}
                 onChangeTiming={onChangeTiming}
                 onToggleActive={onToggleActive}
@@ -107,7 +116,12 @@ export default function LiveProgrammeView({
         </div>
 
         {window ? (
-          <button className="btn btn-ghost" style={{ marginTop: 12 }} onClick={onAddClass}>
+          <button
+            className="btn btn-ghost"
+            style={{ marginTop: 12 }}
+            onClick={onAddClass}
+            data-tip="Schedule a class, or a weekly series across the dates"
+          >
             <Icon name="plus" size={15} strokeWidth={2.2} /> Add class
           </button>
         ) : (
@@ -118,7 +132,11 @@ export default function LiveProgrammeView({
               <b>Set the dates first</b>
               <small>How long the programme runs decides how many classes a weekly series creates.</small>
             </div>
-            <button className="btn btn-coral btn-sm" onClick={onSetDates}>
+            <button
+              className="btn btn-coral btn-sm"
+              onClick={onSetDates}
+              data-tip="Set the start date and how many weeks it runs"
+            >
               Set dates
             </button>
           </div>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import Modal from "../../../common/Modal";
 import Icon from "../../../common/Icon";
 import { OFFER_KINDS } from "../../../../lib/programme";
+import { currencySymbol } from "../../../../lib/locale";
 
 const LENGTHS = ["1 month", "3 months", "6 months", "12 months"];
 
@@ -25,8 +26,9 @@ export default function AddOfferModal({ open, onClose, onSave }) {
   const handleSave = () => {
     onSave(
       kind === "subscription"
-        ? { kind, length, price: `£${price || 0}` }
-        : { kind, label: label || "Full programme", price: `£${price || 0}` }
+        // The number only: it's shown in whatever currency the studio uses.
+        ? { kind, length, price: String(Number(price) || 0) }
+        : { kind, label: label || "Full programme", price: String(Number(price) || 0) }
     );
     handleClose();
   };
@@ -38,10 +40,14 @@ export default function AddOfferModal({ open, onClose, onSave }) {
       title="Add an offer"
       footer={
         <>
-          <button className="btn btn-ghost" onClick={handleClose}>
+          <button className="btn btn-ghost" onClick={handleClose} data-tip="Close without adding">
             Cancel
           </button>
-          <button className="btn btn-coral" onClick={handleSave}>
+          <button
+            className="btn btn-coral"
+            onClick={handleSave}
+            data-tip="Add this offer to the programme"
+          >
             Save offer
           </button>
         </>
@@ -90,7 +96,7 @@ export default function AddOfferModal({ open, onClose, onSave }) {
           </div>
         )}
         <div className="ctrl">
-          <label className="lbl">Price (£)</label>
+          <label className="lbl">Price ({currencySymbol().trim()})</label>
           <input
             className="field"
             type="number"

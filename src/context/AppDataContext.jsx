@@ -1,6 +1,7 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { Fragment, createContext, useCallback, useContext, useMemo, useState } from "react";
 import {
   coverSwatches,
+  initialAttendance,
   initialEverydayLessons,
   initialBundles,
   initialMembershipFeatures,
@@ -13,8 +14,11 @@ import {
 import { nextMembershipOrder } from "../lib/membership";
 import { giftedRenewal, voucherCode } from "../lib/members";
 import { renewalAfterPayment } from "../lib/payments";
+import { withMark } from "../lib/attendance";
 import { formatDayMonth } from "../lib/datetime";
 import { MAX_LINKS, moveItem, pageSnapshot, sectionOrderOf, themeOf } from "../lib/page";
+import { applyStudioLocale } from "../lib/locale";
+import { movedShareUrl, normaliseHandle, settingsChanges } from "../lib/settings";
 import { useToast } from "./ToastContext";
 
 const AppDataContext = createContext(null);
@@ -60,6 +64,13 @@ export function AppDataProvider({ children }) {
   const [programmes, setProgrammes] = useState(initialProgrammes);
   const [payments, setPayments] = useState(initialPayments);
   const [everydayLessons, setEverydayLessons] = useState(initialEverydayLessons);
+  // Who came to what: one record per person per session (lib/attendance.js).
+  const [attendance, setAttendance] = useState(initialAttendance);
+
+  // Every date and money label below reads the studio's zone and currency, so
+  // they're applied before anything renders (see lib/locale.js for why this is
+  // a setting rather than an argument).
+  applyStudioLocale(studio);
 
   /* ---------- profile / page ---------- */
   const updateStudio = useCallback((patch) => {
@@ -860,6 +871,53 @@ export function AppDataProvider({ children }) {
     [showToast]
   );
 
+  /* ---------- settings ---------- */
+  // Name, page address, currency and time zone take effect at once — they
+  // aren't part of My page's draft. The name reaches the published page too, and
+  // a new address reaches every programme share link that carries the old one.
+  const updateSettings = useCallback(
+    (draft) => {
+      const changed = settingsChanges(studio, draft);
+      if (!changed.length) return;
+      const handle = normaliseHandle(draft.handle);
+      const name = draft.name.trim();
+      setStudio((s) => ({ ...s, name, handle, currency: draft.currency, timezone: draft.timezone }));
+      if (changed.includes("name")) setPublishedPage((p) => ({ ...p, name }));
+      if (changed.includes("handle")) {
+        setProgrammes((list) =>
+          list.map((p) =>
+            p.pricing?.shareUrl
+              ? { ...p, pricing: { ...p.pricing, shareUrl: movedShareUrl(p.pricing.shareUrl, studio.handle, handle) } }
+              : p
+          )
+        );
+      }
+      showToast("Settings saved");
+    },
+    [studio, showToast]
+  );
+
+  /* ---------- attendance ---------- */
+  // Records arrive from the join links, which live on their own site. The one
+  // thing done here is marking by hand — for someone who came in another way,
+  // or who clicked and never turned up. Deleting a class or lesson keeps its
+  // records: the people still came, and their counts shouldn't drop.
+  const markAttendance = useCallback(
+    (session, member, present) => {
+      setAttendance((list) =>
+        withMark(list, {
+          id: nextId("att"),
+          sessionId: session.id,
+          memberId: member.id,
+          present,
+          at: session.startsAt,
+        })
+      );
+      showToast(`${member.name.split(" ")[0]} marked ${present ? "present" : "absent"}`);
+    },
+    [showToast]
+  );
+
   const value = useMemo(
     () => ({
       studio,
@@ -926,6 +984,9 @@ export function AppDataProvider({ children }) {
       updateEverydayLesson,
       toggleEverydayLesson,
       deleteEverydayLesson,
+      attendance,
+      markAttendance,
+      updateSettings,
     }),
     [
       studio,
@@ -991,11 +1052,20 @@ export function AppDataProvider({ children }) {
       updateEverydayLesson,
       toggleEverydayLesson,
       deleteEverydayLesson,
+      attendance,
+      markAttendance,
+      updateSettings,
     ]
 
   );
 
-  return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;
+  // Keyed by zone and currency so a change redraws everything: pages memoize
+  // on their data, and a memo wouldn't know the clock it was computed in moved.
+  return (
+    <AppDataContext.Provider value={value}>
+      <Fragment key={`${studio.timezone}|${studio.currency}`}>{children}</Fragment>
+    </AppDataContext.Provider>
+  );
 }
 
 export function useAppData() {

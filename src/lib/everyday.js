@@ -9,6 +9,8 @@
 // The dividing line against a programme is commercial, not temporal: a
 // programme is bought, everything here comes with the subscription.
 
+import { addDays, atClock, fromDayInput, weekdayOf } from "./datetime";
+
 const DAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const DAY_INITIAL = ["S", "M", "T", "W", "T", "F", "S"];
 
@@ -62,13 +64,12 @@ const timeParts = (time) => {
   return Number.isNaN(h) ? null : [h, m || 0];
 };
 
-// The one date a non-repeating lesson runs on, as a timestamp.
+// The one date a non-repeating lesson runs on, as a timestamp. Its date and
+// time are the studio's wall clock.
 function onceAt(item) {
   const parts = timeParts(item?.time);
-  if (!parts || !item?.date) return null;
-  const [y, mo, d] = String(item.date).split("-").map(Number);
-  if (!y) return null;
-  return new Date(y, mo - 1, d, parts[0], parts[1], 0, 0);
+  const day = parts && item?.date ? fromDayInput(item.date) : null;
+  return day ? atClock(day, parts[0], parts[1]) : null;
 }
 
 // The next time it actually runs. Derived on every render rather than stored —
@@ -85,10 +86,8 @@ export function nextRun(item, now = new Date()) {
 
   const days = normalise(item.days);
   for (let i = 0; i < 8; i++) {
-    const d = new Date(now);
-    d.setDate(d.getDate() + i);
-    d.setHours(parts[0], parts[1], 0, 0);
-    if (days.includes(d.getDay()) && d.getTime() > now.getTime()) return d.toISOString();
+    const d = atClock(addDays(now, i), parts[0], parts[1]);
+    if (days.includes(weekdayOf(d)) && d.getTime() > now.getTime()) return d.toISOString();
   }
   return null;
 }
@@ -102,9 +101,8 @@ export function currentSession(item, now = new Date()) {
   if (!parts) return null;
   const started = repeats(item)
     ? (() => {
-        const d = new Date(now);
-        d.setHours(parts[0], parts[1], 0, 0);
-        return normalise(item.days).includes(d.getDay()) ? d : null;
+        const d = atClock(now, parts[0], parts[1]);
+        return normalise(item.days).includes(weekdayOf(d)) ? d : null;
       })()
     : onceAt(item);
   if (!started) return null;

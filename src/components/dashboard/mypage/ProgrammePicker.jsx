@@ -1,6 +1,9 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import Icon from "../../common/Icon";
 import { PROGRAMME_TYPES, contentSummary } from "../../../lib/programme";
+import SearchInput from "../../common/SearchInput";
+import { matchesQuery, needsSearch } from "../../../lib/search";
 
 // Which published programmes the page shows. Everything published starts
 // ticked; untick one to keep it off the page without unpublishing it — it
@@ -8,13 +11,21 @@ import { PROGRAMME_TYPES, contentSummary } from "../../../lib/programme";
 export default function ProgrammePicker({ published, hidden = [], drafts = 0, onToggle, onShowAll }) {
   const shown = published.filter((p) => !hidden.includes(p.id)).length;
   const allShown = shown === published.length;
+  const [search, setSearch] = useState("");
+  const listed = published.filter((p) => matchesQuery([p.name, PROGRAMME_TYPES[p.type]?.label], search));
 
   return (
     <>
 
-      {published.length ? (
+      {needsSearch(published.length) && (
+        <SearchInput className="in-form" value={search} onChange={setSearch} placeholder="Search programmes" />
+      )}
+
+      {published.length && !listed.length ? (
+        <p className="hint">No programmes match your search.</p>
+      ) : published.length ? (
         <div className="bundle-pick pp-pick">
-          {published.map((p) => {
+          {listed.map((p) => {
             const on = !hidden.includes(p.id);
             return (
               <label className={`bundle-row${on ? " on" : ""}`} key={p.id}>

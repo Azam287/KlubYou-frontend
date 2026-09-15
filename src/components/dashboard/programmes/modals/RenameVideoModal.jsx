@@ -14,19 +14,21 @@ export default function RenameVideoModal({ open, video, onClose, onSave }) {
       maxWidth={440}
       footer={
         <>
-          <button className="btn btn-ghost" onClick={onClose}>
+          <button className="btn btn-ghost" onClick={onClose} data-tip="Close without saving">
             Cancel
           </button>
-          <button
-            className="btn btn-coral"
-            disabled={!title.trim()}
-            onClick={() => {
-              onSave(title.trim());
-              onClose();
-            }}
-          >
-            Save name
-          </button>
+          <span className="tip-wrap" data-tip={!title.trim() ? "Type a name first" : "Save the new name"}>
+            <button
+              className="btn btn-coral"
+              disabled={!title.trim()}
+              onClick={() => {
+                onSave(title.trim());
+                onClose();
+              }}
+            >
+              Save name
+            </button>
+          </span>
         </>
       }
     >

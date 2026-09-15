@@ -21,6 +21,13 @@ const emptyForm = {
 // Recurrence is real here: the dates it will create are computed and previewed
 // before you commit. The old version collected a "Repeats" value and threw it
 // away, always creating exactly one class.
+// What each repeat choice will create, said before it's chosen.
+const PATTERN_TIPS = {
+  once: "Just this one class",
+  weekly: "The same day and time every week, until the programme ends",
+  weekdays: "Monday to Friday at this time, until the programme ends",
+};
+
 export default function ClassFormModal({
   open,
   onClose,
@@ -71,12 +78,29 @@ export default function ClassFormModal({
       maxWidth={560}
       footer={
         <>
-          <button className="btn btn-ghost" onClick={handleClose}>
+          <button
+            className="btn btn-ghost"
+            onClick={handleClose}
+            data-tip="Close without adding a class"
+          >
             Cancel
           </button>
-          <button className="btn btn-coral" onClick={handleSave} disabled={!startsAt || !!windowError}>
-            {repeating ? `Create ${dates.length} classes` : "Save class"}
-          </button>
+          <span
+            className="tip-wrap"
+            data-tip={
+              !startsAt
+                ? "Pick a date and time first"
+                : windowError
+                  ? windowError
+                  : repeating
+                    ? `Create all ${dates.length} classes`
+                    : "Save the class"
+            }
+          >
+            <button className="btn btn-coral" onClick={handleSave} disabled={!startsAt || !!windowError}>
+              {repeating ? `Create ${dates.length} classes` : "Save class"}
+            </button>
+          </span>
         </>
       }
     >
@@ -113,6 +137,7 @@ export default function ClassFormModal({
         <div className="segbtns">
           {Object.values(REPEAT_PATTERNS).map((p) => (
             <button
+              data-tip={PATTERN_TIPS[p.key]}
               key={p.key}
               className={`seg${form.pattern === p.key ? " on" : ""}`}
               onClick={() => set({ pattern: p.key })}

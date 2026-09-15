@@ -1,0 +1,70 @@
+/* ---------- settings ---------- */
+
+.set-card {
+  max-width: 860px;
+  padding: 0;
+}
+/* A label and why it matters on the left, the field on the right; stacked on phones. */
+.set-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 12px 32px;
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--line-soft);
+}
+.set-l .lbl {
+  display: block;
+  margin-bottom: 4px;
+}
+.set-l .hint,
+.set-r .hint {
+  margin-top: 4px;
+}
+.set-err,
+.set-ok,
+.set-warn {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.set-err {
+  color: var(--coral-deep);
+}
+.set-ok {
+  color: var(--good);
+}
+.set-warn {
+  color: #a5711a;
+}
+.set-device {
+  margin-top: 8px;
+}
+.set-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  flex-wrap: wrap;
+}
+.set-foot .mut {
+  margin-right: auto;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.set-conseq {
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 10px;
+  font-size: 0.93rem;
+}
+@media (max-width: 720px) {
+  .set-row {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 18px 16px;
+  }
+  .set-foot {
+    padding: 14px 16px;
+  }
+}

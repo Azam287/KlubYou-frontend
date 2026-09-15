@@ -23,7 +23,12 @@ export default function DoneStep() {
         Your page is live at <b>klubyou.co/{handle}</b>. Next, set up your page and schedule your
         first class — right from your dashboard.
       </p>
-      <button type="button" className="btn btn-coral btn-block" onClick={enterApp}>
+      <button
+        type="button"
+        className="btn btn-coral btn-block"
+        onClick={enterApp}
+        data-tip="Open your dashboard"
+      >
         Go to dashboard
       </button>
     </div>

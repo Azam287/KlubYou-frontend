@@ -34,12 +34,13 @@ import { offerAmount, allVideos } from "../src/lib/programme";
 import { programmeBuyers } from "../src/lib/stats";
 import {
   initialMembers as M,
+  initialAttendance as ATT,
   initialPayments as PAY,
   initialProgrammes as P,
   initialStudioPlans as PL,
 } from "../src/data/mockData";
 
-const ctx = { plans: PL, programmes: P, payments: PAY };
+const ctx = { plans: PL, programmes: P, payments: PAY, attendance: ATT };
 const m = (id) => M.find((x) => x.id === id);
 const now = Date.now();
 
@@ -47,7 +48,7 @@ const now = Date.now();
 ok("every membership member is on a plan that exists", M.filter((x) => x.plan === "studio").every((x) => planOf(x, PL)));
 ok("every programme buyer bought an offer that exists", M.filter((x) => x.plan === "programme").every((x) => programmeOf(x, P) && offerOf(x, P)));
 ok("nobody bought a draft programme", M.filter((x) => x.plan === "programme").every((x) => programmeOf(x, P).status === "published"));
-ok("nobody stores a plan length, a label or initials any more", M.every((x) => !("planLength" in x) && !("initials" in x) && !("attendedOf" in x)));
+ok("nobody stores a plan length, a label, initials or an attendance count any more", M.every((x) => !("planLength" in x) && !("initials" in x) && !("attendedOf" in x) && !("attended" in x)));
 ok("a programme bought once has no renewal date and can't lapse", M.filter((x) => isLifetime(x, ctx)).every((x) => !x.renewsAt && x.status !== "inactive"));
 ok("every payment points at a plan or an offer that exists", PAY.every((p) =>
   p.planId ? PL.some((pl) => pl.id === p.planId) : P.some((pr) => pr.id === p.programmeId && pr.pricing.offers.some((o) => o.id === p.offerId))));
@@ -87,8 +88,13 @@ ok("a recorded programme counts videos, not attendance", progressOf(m("m17"), ct
   && progressOf(m("m17"), ctx).label === `${breathVideos} of ${breathVideos} videos` && progressOf(m("m17"), ctx).complete);
 ok("...never more than it has", progressOf({ ...m("m17"), watched: 99 }, ctx).done === breathVideos);
 ok("a live programme counts classes held since they joined", progressOf(m("m4"), ctx).kind === "classes" && /^\d+ of \d+ classes$/.test(progressOf(m("m4"), ctx).label));
-ok("...and can't have attended more than were held", progressOf({ ...m("m4"), attended: 50 }, ctx).done === progressOf({ ...m("m4"), attended: 50 }, ctx).total);
-ok("a membership counts classes attended, with no made-up total", progressOf(m("m1"), ctx).label === "34 classes attended");
+const vinyasaClass = P.find((p) => p.id === "morning-vinyasa").classes[0];
+const twice = [...Array(50)].map((_, i) => ({ id: `x${i}`, sessionId: `class:morning-vinyasa:${vinyasaClass.id}`, memberId: "m4", at: vinyasaClass.startsAt, via: "link" }));
+ok("...and can't have attended more than were held", progressOf(m("m4"), { ...ctx, attendance: twice }).done === progressOf(m("m4"), { ...ctx, attendance: twice }).total);
+ok("...counting only that programme's classes", progressOf(m("m4"), { ...ctx, attendance: [{ id: "y", sessionId: "lesson:el1:2026-09-01", memberId: "m4", at: vinyasaClass.startsAt, via: "link" }] }).done === 0);
+const m1Came = ATT.filter((r) => r.memberId === "m1").length;
+ok("a membership counts classes attended, from attendance records, with no made-up total", m1Came > 0 && progressOf(m("m1"), ctx).label === `${m1Came} classes attended`);
+ok("...and nothing recorded reads as no classes", progressOf(m("m1"), { ...ctx, attendance: [] }).label === "No classes yet");
 
 /* ---- finding them ---- */
 const counts = stateCounts(M, ctx);

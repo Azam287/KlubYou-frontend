@@ -23,15 +23,20 @@ export default function ChannelStep() {
         {handleCheck.status === "ok" && <Icon name="check" size={15} strokeWidth={2.6} />}
         {handleCheck.status === "no" && <span aria-hidden="true">✗</span>} {handleCheck.message}
       </div>
-      <button
-        type="button"
-        className="btn btn-primary btn-block"
-        style={{ marginTop: "1.4rem" }}
-        disabled={handleCheck.status !== "ok"}
-        onClick={() => navigate("/onboarding/done")}
+      <span
+        className="tip-wrap tip-block"
+        data-tip={handleCheck.status === "ok" ? "Claim this address and continue" : "Pick an address that's available first"}
       >
-        Continue
-      </button>
+        <button
+          type="button"
+          className="btn btn-primary btn-block"
+          style={{ marginTop: "1.4rem" }}
+          disabled={handleCheck.status !== "ok"}
+          onClick={() => navigate("/onboarding/done")}
+        >
+          Continue
+        </button>
+      </span>
     </div>
   );
 }

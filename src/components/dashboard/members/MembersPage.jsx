@@ -32,6 +32,7 @@ export default function MembersPage() {
     payments,
     bundles,
     everydayLessons,
+    attendance,
     giftMemberDays,
     setMemberAutoRenew,
     addMemberVoucher,
@@ -55,8 +56,8 @@ export default function MembersPage() {
   const [stopId, setStopId] = useState(null);
 
   const ctx = useMemo(
-    () => ({ plans: studioPlans, programmes, payments, bundles, lessons: everydayLessons }),
-    [studioPlans, programmes, payments, bundles, everydayLessons]
+    () => ({ plans: studioPlans, programmes, payments, bundles, lessons: everydayLessons, attendance }),
+    [studioPlans, programmes, payments, bundles, everydayLessons, attendance]
   );
   const counts = useMemo(() => stateCounts(members, ctx), [members, ctx]);
   const summary = useMemo(() => memberSummary(members, ctx), [members, ctx]);

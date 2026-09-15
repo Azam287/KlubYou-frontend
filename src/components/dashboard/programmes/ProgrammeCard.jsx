@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import Icon from "../../common/Icon";
-import { PROGRAMME_TYPES, contentSummary, isPublished, leadOffer } from "../../../lib/programme";
+import { contentSummary, isPublished, leadOffer, offerPrice, PROGRAMME_TYPES } from "../../../lib/programme";
 
 export default function ProgrammeCard({ programme }) {
   const navigate = useNavigate();
@@ -9,7 +9,11 @@ export default function ProgrammeCard({ programme }) {
   const draft = !isPublished(programme);
 
   return (
-    <button className="prog-card" onClick={() => navigate(`/dashboard/programmes/${programme.id}`)}>
+    <button
+      className="prog-card"
+      onClick={() => navigate(`/dashboard/programmes/${programme.id}`)}
+      data-tip={`Open ${programme.name}`}
+    >
       <div className="prog-thumb" style={{ background: programme.thumbGradient }}>
         <Icon
           name={programme.icon === "leaf" ? "heart" : "personKey"}
@@ -33,7 +37,7 @@ export default function ProgrammeCard({ programme }) {
           {contentSummary(programme)}
           {/* Spell out the alternative: "studio only" read like a restriction
               rather than the pricing choice it is. */}
-          {lead ? ` · from ${lead.price}` : " · subscribers only, no separate price"}
+          {lead ? ` · from ${offerPrice(lead)}` : " · subscribers only, no separate price"}
         </div>
       </div>
     </button>

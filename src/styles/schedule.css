@@ -153,21 +153,24 @@
 }
 .sitem {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
   background: var(--paper);
   border: 1px solid transparent;
   border-radius: 10px;
-  padding: 0.5rem 0.6rem;
+  padding: 0.5rem 0.6rem 0.55rem;
   cursor: pointer;
   text-align: left;
+  min-width: 0;
 }
 .sitem:hover {
   border-color: var(--ink);
 }
 .sitem.off {
   opacity: 0.55;
+}
+.sitem.off .sitem-name {
   text-decoration: line-through;
 }
 /* A clash is a warning, not a failure — amber, the same as every other
@@ -176,6 +179,19 @@
 .sitem.clash {
   border-color: rgba(227, 154, 44, 0.7);
   background: rgba(227, 154, 44, 0.07);
+}
+/* Time on the left, the action pinned right — the same in every card. */
+.sitem-top {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+  min-height: 26px;
+  margin-bottom: 2px;
+}
+.sitem-top > button {
+  margin-left: auto;
+  flex: none;
 }
 .sitem-t {
   font-weight: 800;
@@ -198,18 +214,20 @@
 .sdot.once {
   background: #e39a2c;
 }
-.sitem-n {
-  flex: 1;
-  min-width: 92px;
-}
-.sitem-n b {
+.sitem-name {
   display: block;
   font-size: 0.86rem;
   line-height: 1.25;
+  overflow-wrap: anywhere;
 }
-.sitem-n small {
+.sitem-src {
+  display: block;
   color: var(--ink-soft);
   font-size: 0.74rem;
+  line-height: 1.35;
+}
+.sitem-clash {
+  margin-top: 4px;
 }
 .sitem .copy {
   width: 26px;

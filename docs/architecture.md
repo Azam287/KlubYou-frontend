@@ -14,13 +14,19 @@ src/
 │   ├── programme.js         programme types, run window, series, readiness, offers
 │   ├── everyday.js          everyday lessons: patterns, next run, on now
 │   ├── schedule.js          the derived studio timetable
+│   ├── sessions.js          session ids, members' links (JOIN_DOMAIN), host names — imports nothing
+│   ├── attendance.js        who a session is for, register marking, session reports, quiet members
 │   ├── membership.js        plans, bundles, extra benefits, pricing maths, table rows
+│   ├── overview.js          the overview: fair earnings comparison, to-dos, coming up, activity
 │   ├── members.js           members: access, status, renewal, activity, filters, actions
 │   ├── payments.js          payments: summary, payouts, filters, marking paid, receipts, CSV
+│   ├── search.js            one search rule for every list (case, accents, every word)
 │   ├── paging.js            splitting a list into pages (members and payments tables)
 │   ├── page.js              the public page: links, colour contrast, what it shows
 │   ├── stats.js             every dashboard number, money formatting, platform fee
-│   ├── datetime.js          date formatting and date-input parsing
+│   ├── datetime.js          dates in the studio's zone: formatting, days, date-input parsing
+│   ├── locale.js            the studio's zone and currency: money(), partsOf/zonedDate — imports nothing
+│   ├── settings.js          settings rules: page address, name, what a change will do
 │   └── tooltip.js           tooltip placement maths
 ├── context/
 │   ├── AppDataContext.jsx   ALL app data + every action that changes it
@@ -61,6 +67,20 @@ mockData.js ──seeds──▶ AppDataContext (useState per collection)
   React, no context, no DOM (except `TooltipLayer`, which is a component). Pass
   `now` in when time matters, so functions stay testable.
 - **IDs** for new records come from `nextId(prefix)` in the context (`bundle-1000`, …).
+- **Attendance** is one more collection (`attendance`, seeded by `initialAttendance`
+  from the same rules the app uses, with a hash instead of `Math.random`). Its one
+  action is `markAttendance(session, member, present)`; records otherwise come from
+  the join site. Anything that counts classes attended (`progressOf`,
+  `averageAttendance`) takes `attendance` — pass it in the page's `ctx`.
+- **Zone and currency are applied, not passed.** `AppDataProvider` calls
+  `applyStudioLocale(studio)` at the top of every render, and `money()` and every
+  date helper read it. This is the one deliberate exception to "pass it in": ~60
+  call sites would each need the zone, and a missed one silently uses the
+  browser's. The provider's children are keyed by zone and currency, so changing
+  either remounts the app — pages memoize on data and wouldn't notice. Tests call
+  `applyStudioLocale` themselves and reset it.
+- **`members.js` and `attendance.js` can't import each other**; both read session
+  names from `sessions.js`, which imports nothing.
 
 ### Adding a new action
 
@@ -88,7 +108,10 @@ mockData.js ──seeds──▶ AppDataContext (useState per collection)
 | `KebabMenu`     | Row/card menus. `items: [{ label, icon, tip, danger, onClick } \| null]`; `tip` on the menu itself |
 | `Icon`          | SVG icons by name. Add new ones to the map in `Icon.jsx`                     |
 | `TooltipLayer`  | Mounted once in `App.jsx`. Don't mount it again — use `data-tip` (below)     |
+| `SearchInput`   | Every list's search box: icon, clear button (and Esc). Filter with `matchesQuery(fields, query)` from `lib/search.js`; pair with `SearchEmpty` for "No … match" |
 | `Pagination`    | Under a table: count, pages, page size. Pair with `paginate()` from `lib/paging.js`; reset the page to 1 when filters or sort change |
+| `JoinLink` (`dashboard/shared/`) | A members' link with its copy button. Anything that copies a class or lesson link copies this, never the hosting address |
+| `useCopyLink` (`dashboard/shared/`) | Copy a link (adds `https://`), toast only once the clipboard took it |
 | `MembershipComparison` (`dashboard/membership/`) | Plan cards + "What you get" table. Used by the member preview modal and My page; pass `picture` to draw the Choose buttons instead of rendering them |
 
 ### Tooltips
@@ -109,9 +132,13 @@ focus (not on touch), on `<body>` so tables and modals don't clip it.
 
 - Don't use `title=` for tooltips — it doubles up with `data-tip` and can't be styled.
 - Icon-only buttons still need an `aria-label`; `data-tip` is not a label.
-- Every control on the membership page and My page has one; their tests fail
-  if a button there is missing it. Other pages still use `title` — convert them
-  the same way if you touch them.
+- Every button, link, ⋯ menu trigger and menu item in the app has one, and
+  `tests/tooltips-app.test.js` fails the build of the suite if a new one doesn't
+  (it reads the source, since menus and modals don't render in a test). Native
+  `title` tooltips are gone and flagged if they come back; `title` as a Modal or
+  ConfirmModal prop (a heading) and on an `<iframe>` (its accessible name) is fine.
+- Put the tip **last** among the attributes, and say what will happen, including
+  the consequence ("Unpublish — members stop seeing it").
 
 ## Styling
 

@@ -15,7 +15,8 @@
 //   * the studio-wide subscription unlocks every programme, and
 //   * each programme sells its own offers, which unlock only that programme.
 
-import { formatDayMonth, fromDayInput, isFuture, isValidDate } from "./datetime";
+import { addDays, formatDayMonth, fromDayInput, isFuture, isValidDate, startOfDay, weekdayOf } from "./datetime";
+import { money } from "./locale";
 
 // The two shapes a programme can take. Both are bought — that's what makes
 // them programmes rather than everyday lessons — so the wording here is about
@@ -82,14 +83,12 @@ export const isPublished = (programme) => programme?.status === "published";
 // it, which is what a human means by "ends on".
 export function scheduleWindow(schedule) {
   const weeks = Math.round(Number(schedule?.weeks));
-  const startsOn = fromDayInput(schedule?.startsOn);
-  if (!startsOn || !(weeks > 0)) return null;
+  const picked = fromDayInput(schedule?.startsOn);
+  if (!picked || !(weeks > 0)) return null;
   const capped = Math.min(weeks, 52);
-  startsOn.setHours(0, 0, 0, 0);
-  const endsOn = new Date(startsOn);
-  endsOn.setDate(endsOn.getDate() + capped * 7);
-  const lastDay = new Date(endsOn);
-  lastDay.setDate(lastDay.getDate() - 1);
+  const startsOn = startOfDay(picked);
+  const endsOn = addDays(startsOn, capped * 7);
+  const lastDay = addDays(endsOn, -1);
   return {
     weeks: capped,
     startsOn: startsOn.toISOString(),
@@ -168,17 +167,18 @@ export function expandSeries(startsAt, pattern = "once", limit = {}) {
   const stopAt = isValidDate(until) ? new Date(until).getTime() : null;
   const max = stopAt ? 366 : Math.max(1, Math.min(Number(count) || 1, 52));
   const dates = [];
-  const cursor = new Date(startsAt);
+  // Stepped in the studio's days, so a 7am series stays at 7am across a clock change.
+  let cursor = new Date(startsAt);
   for (let i = 0; i < max; i++) {
     if (stopAt && cursor.getTime() >= stopAt) break;
-    dates.push(new Date(cursor).toISOString());
+    dates.push(cursor.toISOString());
     if (pattern === "once") break;
     if (pattern === "weekly") {
-      cursor.setDate(cursor.getDate() + 7);
+      cursor = addDays(cursor, 7);
     } else if (pattern === "weekdays") {
       do {
-        cursor.setDate(cursor.getDate() + 1);
-      } while (cursor.getDay() === 0 || cursor.getDay() === 6);
+        cursor = addDays(cursor, 1);
+      } while (weekdayOf(cursor) === 0 || weekdayOf(cursor) === 6);
     }
   }
   return dates;
@@ -204,7 +204,7 @@ export function seriesSummary(programme) {
   if (ids.length !== 1) return null;
   const members = classes.filter((c) => c.seriesId === ids[0]);
   if (members.length < 2) return null;
-  const days = new Set(members.map((c) => new Date(c.startsAt).getDay()));
+  const days = new Set(members.map((c) => weekdayOf(c.startsAt)));
   return { count: members.length, day: days.size === 1 ? DAY_NAMES[[...days][0]] : null };
 }
 
@@ -240,6 +240,11 @@ export const pricingDecided = (programme) =>
 // Offers store their price as a display string, so anything that needs to add
 // prices up has to read the number back out of it.
 export const offerAmount = (offer) => Number(String(offer?.price).replace(/[^0-9.]/g, "")) || 0;
+
+// An offer's price in the studio's currency. Offers store the price as text
+// ("£40" in older data, "40" now); the number is what counts, so changing the
+// currency relabels every price instead of leaving "£" behind on some.
+export const offerPrice = (offer) => money(offerAmount(offer));
 
 export function leadOffer(programme) {
   const offers = offersOf(programme);
@@ -347,7 +352,7 @@ export function readiness(programme) {
       // "decided" about a programme nobody had priced.
       label: "Decide how it's sold",
       detail: offers.length
-        ? `${offers.map((o) => o.price).join(" · ")} · studio subscribers included`
+        ? `${offers.map((o) => offerPrice(o)).join(" · ")} · studio subscribers included`
         : isStudioOnly(programme)
           ? "Studio subscribers only — no separate price"
           : "Add a price, or say it's for studio subscribers only",

@@ -15,7 +15,12 @@ export default function AccountStep() {
     <div className="ob-card ob-step">
       <h1>Create your account</h1>
       <p className="sub">Start teaching in a few minutes. No card needed.</p>
-      <button type="button" className="btn-google" onClick={() => navigate("/onboarding/channel")}>
+      <button
+        type="button"
+        className="btn-google"
+        onClick={() => navigate("/onboarding/channel")}
+        data-tip="Sign up with your Google account"
+      >
         <GoogleIcon />
         Continue with Google
       </button>
@@ -47,13 +52,21 @@ export default function AccountStep() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
-        <button type="submit" className="btn btn-primary btn-block">
+        <button
+          type="submit"
+          className="btn btn-primary btn-block"
+          data-tip="Create your account with this email and password"
+        >
           Create account
         </button>
       </form>
       <p className="foot-note">
         Already have an account?{" "}
-        <button type="button" onClick={() => navigate("/onboarding/channel")}>
+        <button
+          type="button"
+          onClick={() => navigate("/onboarding/channel")}
+          data-tip="Already signed up? Log in instead"
+        >
           Log in
         </button>
       </p>

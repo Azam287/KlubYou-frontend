@@ -1,5 +1,5 @@
 import Icon from "../../common/Icon";
-import { OFFER_KINDS, isStudioOnly, offersOf } from "../../../lib/programme";
+import { isStudioOnly, OFFER_KINDS, offerPrice, offersOf } from "../../../lib/programme";
 import { planPrice } from "../../../lib/membership";
 
 // Tier 2 of access. Whatever a programme sells here unlocks only this
@@ -35,8 +35,13 @@ export default function PricingPanel({
                 <b>{o.kind === "subscription" ? o.length : o.label || "Full programme"}</b>
                 <small>{OFFER_KINDS[o.kind]?.hint}</small>
               </div>
-              <b className="offer-p">{o.price}</b>
-              <button className="offer-x" title="Remove offer" onClick={() => onRemoveOffer(o.id)}>
+              <b className="offer-p">{offerPrice(o)}</b>
+              <button
+                className="offer-x"
+                aria-label="Remove offer"
+                data-tip="Remove this way to buy it"
+                onClick={() => onRemoveOffer(o.id)}
+              >
                 <Icon name="trash" size={15} strokeWidth={1.9} />
               </button>
             </div>
@@ -66,7 +71,12 @@ export default function PricingPanel({
         </label>
       )}
 
-      <button className="btn btn-ghost" style={{ marginTop: 12 }} onClick={onAddOffer}>
+      <button
+        className="btn btn-ghost"
+        style={{ marginTop: 12 }}
+        onClick={onAddOffer}
+        data-tip="Add a way to buy it — pay once, or a subscription"
+      >
         <Icon name="plus" size={15} strokeWidth={2.2} /> Add an offer
       </button>
 

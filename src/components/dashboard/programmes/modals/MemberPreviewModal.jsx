@@ -3,11 +3,12 @@ import Icon from "../../../common/Icon";
 import { formatWhen } from "../../../../lib/datetime";
 import { planPrice, sortedPlans } from "../../../../lib/membership";
 import {
-  PROGRAMME_TYPES,
-  isLive,
   introVideoOf,
+  isLive,
+  offerPrice,
   offersOf,
   orderedSections,
+  PROGRAMME_TYPES,
   sortedClasses,
 } from "../../../../lib/programme";
 
@@ -27,7 +28,7 @@ export default function MemberPreviewModal({ open, programme, studioPlans, onClo
       title="Preview as member"
       maxWidth={560}
       footer={
-        <button className="btn btn-ghost" onClick={onClose}>
+        <button className="btn btn-ghost" onClick={onClose} data-tip="Back to editing">
           Close preview
         </button>
       }
@@ -88,7 +89,7 @@ export default function MemberPreviewModal({ open, programme, studioPlans, onClo
                   <b>{o.kind === "subscription" ? o.length : o.label || "Full programme"}</b>
                   <small>{o.kind === "subscription" ? "Renews automatically" : "Pay once"}</small>
                 </div>
-                <span className="mp-price num">{o.price}</span>
+                <span className="mp-price num">{offerPrice(o)}</span>
               </div>
             ))}
             {cheapestStudio && (

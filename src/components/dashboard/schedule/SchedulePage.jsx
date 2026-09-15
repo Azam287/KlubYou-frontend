@@ -2,19 +2,21 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePageHeader } from "../../../context/PageHeaderContext";
 import { useAppData } from "../../../context/AppDataContext";
-import { useToast } from "../../../context/ToastContext";
 import Icon from "../../common/Icon";
 import VenueLinkModal from "../shared/VenueLinkModal";
+import useCopyLink from "../shared/useCopyLink";
 import ScheduleDay from "./ScheduleDay";
 import { addDays, liveNow, nextUp, startOfWeek, weekOf } from "../../../lib/schedule";
 import { formatDayMonth, formatRelative, formatWhen } from "../../../lib/datetime";
+import { phaseOf, recordsFor } from "../../../lib/attendance";
+import { attendancePathOf, joinLinkOf, sessionIdOf, targetOfEntry } from "../../../lib/sessions";
 
 // Everything the studio runs, in one week. Assembled on every render from the
 // programmes and lessons themselves — there is no schedule stored anywhere, so
 // this can't fall out of step with the pages that own the classes.
 export default function SchedulePage() {
-  const { programmes, everydayLessons, updateClassLink, updateEverydayLesson } = useAppData();
-  const { showToast } = useToast();
+  const { studio, programmes, everydayLessons, attendance, updateClassLink, updateEverydayLesson } = useAppData();
+  const copy = useCopyLink();
   const navigate = useNavigate();
   const [offset, setOffset] = useState(0);
   const [linkTarget, setLinkTarget] = useState(null);
@@ -36,14 +38,20 @@ export default function SchedulePage() {
     "Every class and lesson you run, in one week. Nothing here is scheduled separately."
   );
 
-  const copyLink = (url) => {
-    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).catch(() => {});
-    showToast("Link copied");
-  };
+  // The members' link, never the Zoom or Meet address — that one can't count who came.
+  const copyLink = (entry) => copy(joinLinkOf(studio.handle, targetOfEntry(entry)), "Members' link copied");
+
+  // How many have come to a session that has started; null before it does.
+  const cameAt = (entry) =>
+    entry.cancelled || entry.draft || phaseOf(entry) === "upcoming"
+      ? null
+      : recordsFor(sessionIdOf(entry), attendance).length;
 
   // Every entry belongs to something else — the schedule is a view of them, so
-  // opening one means going to the page that owns it.
+  // opening one means going to the page that owns it. Once it has started, the
+  // useful place is its attendance.
   const openSource = (item) => {
+    if (cameAt(item) !== null) return navigate(attendancePathOf(sessionIdOf(item)));
     if (item.kind === "programme") navigate(`/dashboard/programmes/${item.sourceId}`);
     else navigate("/dashboard/classes");
   };
@@ -86,14 +94,18 @@ export default function SchedulePage() {
 
       <div className="sched-bar">
         <div className="sched-nav">
-          <button className="sqbtn" onClick={() => setOffset((o) => o - 1)} aria-label="Previous week">
+          <button className="sqbtn" onClick={() => setOffset((o) => o - 1)} aria-label="Previous week" data-tip="Previous week">
             <Icon name="back" size={16} strokeWidth={2.2} />
           </button>
-          <button className="sqbtn flip" onClick={() => setOffset((o) => o + 1)} aria-label="Next week">
+          <button className="sqbtn flip" onClick={() => setOffset((o) => o + 1)} aria-label="Next week" data-tip="Next week">
             <Icon name="back" size={16} strokeWidth={2.2} />
           </button>
           {offset !== 0 && (
-            <button className="btn btn-ghost btn-sm" onClick={() => setOffset(0)}>
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={() => setOffset(0)}
+              data-tip="Jump back to this week"
+            >
               Back to this week
             </button>
           )}
@@ -136,6 +148,7 @@ export default function SchedulePage() {
             onOpen={openSource}
             onFixLink={setLinkTarget}
             onCopyLink={copyLink}
+            cameAt={cameAt}
           />
         ))}
       </div>

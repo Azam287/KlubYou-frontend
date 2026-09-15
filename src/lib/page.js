@@ -5,7 +5,7 @@
 // page can't advertise something that isn't on sale, and nobody has to keep a
 // second list in step.
 
-import { isPublished, isStudioOnly, leadOffer } from "./programme";
+import { isPublished, isStudioOnly, leadOffer, offerPrice } from "./programme";
 import { publishedOnly, sortedPlans } from "./membership";
 
 /* ---------- colours ---------- */
@@ -218,9 +218,10 @@ export const cheapestPlan = (plans) =>
 export function programmePriceLabel(programme) {
   const lead = leadOffer(programme);
   if (lead) {
-    if (lead.kind !== "subscription") return lead.price;
+    const price = offerPrice(lead);
+    if (lead.kind !== "subscription") return price;
     const n = parseInt(String(lead.length || "1"), 10) || 1;
-    return n === 1 ? `${lead.price}/month` : `${lead.price} every ${n} months`;
+    return n === 1 ? `${price}/month` : `${price} every ${n} months`;
   }
   return isStudioOnly(programme) ? "With membership" : "";
 }

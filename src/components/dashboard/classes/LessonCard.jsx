@@ -1,5 +1,8 @@
+import { Link, useNavigate } from "react-router-dom";
 import Icon from "../../common/Icon";
 import KebabMenu from "../../common/KebabMenu";
+import JoinLink from "../shared/JoinLink";
+import { attendancePathOf, hostNameOf } from "../../../lib/sessions";
 import { formatRelative, formatWhen } from "../../../lib/datetime";
 import {
   currentSession,
@@ -14,7 +17,11 @@ import {
 
 // One card for every lesson, repeating or not. Its state is derived — a class
 // that stored mode: "live" was still saying "Live now" days after it ended.
-export default function LessonCard({ item, onEdit, onToggle, onDelete, onCopyLink }) {
+//
+// `link` is the members' link (what gets sent out); `latest` is the report of
+// its most recent session, if it has run.
+export default function LessonCard({ item, link, latest, onEdit, onToggle, onDelete }) {
+  const navigate = useNavigate();
   const paused = isPaused(item);
   const live = currentSession(item);
   const next = nextRun(item);
@@ -60,19 +67,37 @@ export default function LessonCard({ item, onEdit, onToggle, onDelete, onCopyLin
         <div className="lcard-link">
           {item.venueUrl ? (
             <>
-              <span className="vplat zoom">{recurring ? "Same link every time" : "Joining link"}</span>
-              <span className="lcard-url">{item.venueUrl}</span>
-              <button className="copy" title="Copy link" onClick={() => onCopyLink(item.venueUrl)}>
-                <Icon name="copy" size={15} strokeWidth={1.7} />
-              </button>
+              <JoinLink
+                link={link}
+                label=""
+                tip={
+                  recurring
+                    ? "Copy the members' link — the same one every session"
+                    : "Copy the members' link — send this, not the Zoom or Meet address"
+                }
+              />
+              <span className="jlink-host">→ {hostNameOf(item.venueUrl)}</span>
             </>
           ) : (
             <>
               <span className="vplat none">No link yet</span>
-              <span className="lcard-url mut">Members can&apos;t join until you add one</span>
+              <span className="lcard-url mut">
+                Add the Zoom, Meet or YouTube link — the members&apos; link has nowhere to send people
+              </span>
             </>
           )}
         </div>
+        {latest && (
+          <Link
+            className="lcard-att"
+            to={attendancePathOf(latest.session.id)}
+            data-tip="See who came, and mark anyone who came another way"
+          >
+            <Icon name="check" size={14} strokeWidth={2.2} />
+            {latest.phase === "live" ? "On now" : "Last time"}: {latest.came} of {latest.expected}{" "}
+            {latest.phase === "live" ? "in so far" : "came"}
+          </Link>
+        )}
       </div>
 
       <div className="lcard-act">
@@ -80,6 +105,7 @@ export default function LessonCard({ item, onEdit, onToggle, onDelete, onCopyLin
           <i /> {state.label}
         </span>
         <button
+          data-tip={item.venueUrl ? "Change its name, time, days or link" : "Add the joining link — members can't join without it"}
           className={`btn btn-sm ${item.venueUrl ? "btn-ghost" : "btn-coral"}`}
           onClick={() => onEdit(item)}
         >
@@ -87,15 +113,34 @@ export default function LessonCard({ item, onEdit, onToggle, onDelete, onCopyLin
         </button>
         <KebabMenu
           size="sm"
+          tip="Edit, pause or remove this lesson"
           items={[
-            { label: "Edit lesson", icon: "clock", onClick: () => onEdit(item) },
+            {
+              label: "Edit lesson",
+              icon: "clock",
+              tip: "Change its name, time, days or link",
+              onClick: () => onEdit(item),
+            },
+            {
+              label: "See attendance",
+              icon: "check",
+              tip: "Every session of it, and who came",
+              onClick: () => navigate(`/dashboard/attendance?for=lesson:${item.id}`),
+            },
             {
               label: paused ? "Start it again" : "Pause it",
               icon: "pause",
+              tip: paused ? "Start it running again on its days" : "Stop it running for now — nothing is deleted",
               onClick: () => onToggle(item.id),
             },
             null,
-            { label: "Remove", icon: "trash", danger: true, onClick: () => onDelete(item.id) },
+            {
+              label: "Remove",
+              icon: "trash",
+              danger: true,
+              tip: "Delete it — members can no longer join it",
+              onClick: () => onDelete(item.id),
+            },
           ]}
         />
       </div>

@@ -32,35 +32,60 @@ export default function NewProgrammeModal({ open, onClose, onCreate }) {
       footer={
         step === 1 ? (
           <>
-            <button className="btn btn-ghost" onClick={handleClose}>
+            <button
+              className="btn btn-ghost"
+              onClick={handleClose}
+              data-tip="Close without creating anything"
+            >
               Cancel
             </button>
-            <button className="btn btn-coral" onClick={() => setStep(2)}>
+            <button
+              className="btn btn-coral"
+              onClick={() => setStep(2)}
+              data-tip="Next: its name, description and dates"
+            >
               Continue
             </button>
           </>
         ) : (
           <>
-            <button className="btn btn-ghost" onClick={() => setStep(1)}>
+            <button
+              className="btn btn-ghost"
+              onClick={() => setStep(1)}
+              data-tip="Back to choosing live or recorded"
+            >
               Back
             </button>
-            <button
-              className="btn btn-coral"
-              // Name and description are what a buyer reads, so a programme
-              // can't start without them. The intro video can follow — you may
-              // not have filmed it yet, and publishing asks for it anyway.
-              disabled={
-                !form.name.trim() ||
-                !form.description.trim() ||
-                (form.type === "live" && !scheduleWindow(form))
+            <span
+              className="tip-wrap"
+              data-tip={
+                !form.name.trim()
+                  ? "Give it a name first"
+                  : !form.description.trim()
+                    ? "Add a description first — it's what buyers read"
+                    : form.type === "live" && !scheduleWindow(form)
+                      ? "Set when it runs first"
+                      : "Create it as a draft — nothing is on sale until you publish"
               }
-              onClick={() => {
-                onCreate(form);
-                reset();
-              }}
             >
-              Create programme
-            </button>
+              <button
+                className="btn btn-coral"
+                // Name and description are what a buyer reads, so a programme
+                // can't start without them. The intro video can follow — you may
+                // not have filmed it yet, and publishing asks for it anyway.
+                disabled={
+                  !form.name.trim() ||
+                  !form.description.trim() ||
+                  (form.type === "live" && !scheduleWindow(form))
+                }
+                onClick={() => {
+                  onCreate(form);
+                  reset();
+                }}
+              >
+                Create programme
+              </button>
+            </span>
           </>
         )
       }

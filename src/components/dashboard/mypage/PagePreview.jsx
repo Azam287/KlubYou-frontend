@@ -58,9 +58,8 @@ export default function PagePreview({
   const order = visibleSections(studio);
   const joinable = entry && order.includes("memberships");
   const avatar = studio.avatarImage ? { backgroundImage: `url(${studio.avatarImage})` } : undefined;
-  const cover = studio.coverImage || "https://picsum.photos/400/150"
-    ? { backgroundImage: `url(${studio.coverImage || "https://picsum.photos/400/150"})` }
-    : undefined;
+  // No upload shows a placeholder photo, so the header is never empty.
+  const cover = { backgroundImage: `url(${studio.coverImage || "https://picsum.photos/400/150"})` };
 
   // The sections under the header, in the order the creator set. Each is
   // written as if it stood alone; empty ones render nothing.

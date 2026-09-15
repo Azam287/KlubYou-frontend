@@ -3,6 +3,7 @@ import { money2 } from "../../../lib/stats";
 import { formatDayMonth, formatMonthYear } from "../../../lib/datetime";
 import { contentSummaryOf } from "../../../lib/membership";
 import { PROGRAMME_TYPES } from "../../../lib/programme";
+import { lastAttendedOf } from "../../../lib/attendance";
 import {
   accessOf,
   canGift,
@@ -29,6 +30,7 @@ export default function MemberDetailModal({ member, ctx, onClose, onEmail, onGif
   const state = stateOf(member, ctx);
   const renewal = renewalOf(member, ctx);
   const progress = progressOf(member, ctx);
+  const lastCame = lastAttendedOf(member, ctx.attendance);
   const payments = paymentsOf(member, ctx.payments);
   const opens = access.plan
     ? contentSummaryOf(access.plan, ctx.bundles, ctx.programmes, ctx.lessons)
@@ -113,7 +115,12 @@ export default function MemberDetailModal({ member, ctx, onClose, onEmail, onGif
         </div>
         <div>
           <dt>Activity</dt>
-          <dd>{progress.label}</dd>
+          <dd>
+            {progress.label}
+            {progress.kind !== "videos" && progress.kind !== "none" && (
+              <small>{lastCame ? `Last came ${formatDayMonth(lastCame)}` : "Hasn't come to a class yet"}</small>
+            )}
+          </dd>
         </div>
       </dl>
 

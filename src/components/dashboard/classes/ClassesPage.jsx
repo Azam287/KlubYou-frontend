@@ -1,28 +1,38 @@
 import { useMemo, useState } from "react";
 import { usePageHeader } from "../../../context/PageHeaderContext";
 import { useAppData } from "../../../context/AppDataContext";
-import { useToast } from "../../../context/ToastContext";
 import { Link } from "react-router-dom";
 import Icon from "../../common/Icon";
 import LessonCard from "./LessonCard";
 import LessonFormModal from "./LessonFormModal";
-import { byNextRun, repeats } from "../../../lib/everyday";
+import SearchInput from "../../common/SearchInput";
+import SearchEmpty from "../../common/SearchEmpty";
+import { byNextRun, patternLabel, repeats, timeLabel } from "../../../lib/everyday";
+import { matchesQuery } from "../../../lib/search";
+import { recentSessions, sessionReport } from "../../../lib/attendance";
+import { joinLinkOf, lessonTarget } from "../../../lib/sessions";
 
 export default function ClassesPage() {
   const {
+    studio,
+    members,
+    studioPlans,
+    bundles,
+    programmes,
+    attendance,
     everydayLessons,
     addEverydayLesson,
     updateEverydayLesson,
     toggleEverydayLesson,
     deleteEverydayLesson,
   } = useAppData();
-  const { showToast } = useToast();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   // Which kind the form opens as. One record type still backs both — this
   // decides which half of the form is shown, so neither kind is asked a
   // question the button already answered.
   const [adding, setAdding] = useState("everyday");
+  const [search, setSearch] = useState("");
 
   const openNew = (kind) => {
     setEditing(null);
@@ -38,10 +48,18 @@ export default function ClassesPage() {
       // One flex child: the topbar is space-between, so two loose buttons
       // would be pushed to opposite ends of it.
       <div className="hdr-actions">
-        <button className="btn btn-ghost" onClick={() => openNew("once")}>
+        <button
+          className="btn btn-ghost"
+          onClick={() => openNew("once")}
+          data-tip="Add a single session on one date, like a workshop"
+        >
           <Icon name="plus" size={16} strokeWidth={2.2} /> One-off class
         </button>
-        <button className="btn btn-coral" onClick={() => openNew("everyday")}>
+        <button
+          className="btn btn-coral"
+          onClick={() => openNew("everyday")}
+          data-tip="Add a class that repeats on set days, same time and link"
+        >
           <Icon name="plus" size={16} strokeWidth={2.2} /> Everyday lesson
         </button>
       </div>
@@ -57,20 +75,30 @@ export default function ClassesPage() {
 
   // Soonest first within each group, so what's on today is at the top and
   // finished one-offs sink to the bottom.
+  // Searched by title, days ("weekdays") and time ("7:00am").
   const [regular, oneOffs] = useMemo(() => {
-    const sorted = [...everydayLessons].sort((a, b) => byNextRun(a, b));
+    const sorted = [...everydayLessons]
+      .sort((a, b) => byNextRun(a, b))
+      .filter((l) => matchesQuery([l.title, patternLabel(l), timeLabel(l.time)], search));
     return [sorted.filter(repeats), sorted.filter((l) => !repeats(l))];
-  }, [everydayLessons]);
+  }, [everydayLessons, search]);
+  const searching = search.trim() !== "";
 
   const openForm = (item) => {
     setEditing(item);
     setFormOpen(true);
   };
 
-  const copyLink = (url) => {
-    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).catch(() => {});
-    showToast("Link copied");
-  };
+  // Each lesson's most recent session that has started, for the card's
+  // "Last time: 5 of 8 came" line.
+  const latestOf = useMemo(() => {
+    const data = { members, plans: studioPlans, bundles, programmes, lessons: everydayLessons, attendance };
+    const latest = new Map();
+    for (const s of recentSessions(data)) {
+      if (s.kind !== "programme" && !latest.has(s.refId)) latest.set(s.refId, s);
+    }
+    return (lessonId) => (latest.has(lessonId) ? sessionReport(latest.get(lessonId), data) : null);
+  }, [members, studioPlans, bundles, programmes, everydayLessons, attendance]);
 
   const list = (items, empty) =>
     items.length ? (
@@ -78,10 +106,11 @@ export default function ClassesPage() {
         <LessonCard
           key={item.id}
           item={item}
+          link={joinLinkOf(studio.handle, lessonTarget(item.id))}
+          latest={latestOf(item.id)}
           onEdit={openForm}
           onToggle={toggleEverydayLesson}
           onDelete={deleteEverydayLesson}
-          onCopyLink={copyLink}
         />
       ))
     ) : (
@@ -100,7 +129,7 @@ export default function ClassesPage() {
             That's the whole difference. Anyone on your studio subscription can join everything
             on this page, so there's nothing to price and nothing to publish — add it and it's
             on. If you want to sell something on its own, with a start and an end, make it a{" "}
-            <Link to="/dashboard/programmes">programme</Link> instead.
+            <Link to="/dashboard/programmes" data-tip="Open Programmes">programme</Link> instead.
           </p>
           <p>
             Host each one wherever you like — Zoom, Google Meet, YouTube — and paste the link.
@@ -110,20 +139,42 @@ export default function ClassesPage() {
         </div>
       </div>
 
-      <div className="sec-head">
-        <h3>Repeats every week</h3>
-        <span className="mut">Same time, same link — set it up once and leave it</span>
+      <div className="filters">
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Search lessons"
+          label="Search lessons by title, days or time"
+        />
       </div>
-      {list(
-        regular,
-        "Nothing repeating yet. Set the time and the days once, and it keeps running — there's no schedule to keep topping up."
-      )}
 
-      <div className="sec-head">
-        <h3>One-off classes</h3>
-        <span className="mut">A single session on one date, then it's done</span>
-      </div>
-      {list(oneOffs, "No one-off classes coming up. Use one for a workshop or a guest session.")}
+      {searching && regular.length + oneOffs.length === 0 ? (
+        <SearchEmpty query={search} noun="lessons or classes" onClear={() => setSearch("")} />
+      ) : (
+        <>
+          <div className="sec-head">
+            <h3>Repeats every week</h3>
+            <span className="mut">Same time, same link — set it up once and leave it</span>
+          </div>
+          {list(
+            regular,
+            searching
+              ? "No repeating lessons match your search."
+              : "Nothing repeating yet. Set the time and the days once, and it keeps running — there's no schedule to keep topping up."
+          )}
+
+          <div className="sec-head">
+            <h3>One-off classes</h3>
+            <span className="mut">A single session on one date, then it's done</span>
+          </div>
+          {list(
+            oneOffs,
+            searching
+              ? "No one-off classes match your search."
+              : "No one-off classes coming up. Use one for a workshop or a guest session."
+          )}
+        </>
+      )}
 
       <LessonFormModal
         key={editing?.id || `new-${adding}`}

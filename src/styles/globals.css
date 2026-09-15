@@ -812,3 +812,42 @@ textarea.field {
     text-align: center;
   }
 }
+
+/* ---------- search ---------- */
+/* The browser's own clear cross would sit beside ours. */
+.search input::-webkit-search-cancel-button {
+  display: none;
+}
+.search-x {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: var(--paper);
+  color: var(--ink-soft);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.search-x:hover {
+  color: var(--ink);
+}
+/* Inside a form, above a pick-list: full width, a little space below. */
+.search.in-form {
+  max-width: none;
+  margin-bottom: 10px;
+}
+.search-empty .btn {
+  margin-left: 0.3rem;
+}
+/* A full-width button keeps its width inside the wrapper that carries its tip. */
+.tip-wrap.tip-block,
+.tip-wrap.ready-go-wrap {
+  display: flex;
+  width: 100%;
+}
+.tip-wrap.tip-block > .btn-block,
+.tip-wrap.ready-go-wrap > .btn-block {
+  flex: 1;
+}

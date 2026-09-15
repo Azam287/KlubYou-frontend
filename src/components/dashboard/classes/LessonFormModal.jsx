@@ -52,12 +52,25 @@ export default function LessonFormModal({ open, editing, kind = "everyday", onCl
       maxWidth={520}
       footer={
         <>
-          <button className="btn btn-ghost" onClick={onClose}>
+          <button className="btn btn-ghost" onClick={onClose} data-tip="Close without saving">
             Cancel
           </button>
-          <button className="btn btn-coral" onClick={handleSave} disabled={incomplete}>
-            {editing ? "Save changes" : `Add ${noun}`}
-          </button>
+          <span
+            className="tip-wrap"
+            data-tip={
+              incomplete
+                ? once
+                  ? "Pick a date first"
+                  : "Pick at least one day first"
+                : editing
+                  ? "Save the changes"
+                  : `Add the ${noun}`
+            }
+          >
+            <button className="btn btn-coral" onClick={handleSave} disabled={incomplete}>
+              {editing ? "Save changes" : `Add ${noun}`}
+            </button>
+          </span>
         </>
       }
     >
@@ -77,6 +90,7 @@ export default function LessonFormModal({ open, editing, kind = "everyday", onCl
           <div className="segbtns">
             {PRESETS.map((p) => (
               <button
+                data-tip={`Runs ${p.label.toLowerCase()}`}
                 key={p.key}
                 className={`seg${daysLabel(form.days) === p.label ? " on" : ""}`}
                 onClick={() => set({ days: p.days })}
@@ -107,7 +121,9 @@ export default function LessonFormModal({ open, editing, kind = "everyday", onCl
                 <button
                   key={d.day}
                   className={`day${form.days.includes(d.day) ? " on" : ""}`}
-                  title={d.short}
+                  aria-label={d.short}
+                  aria-pressed={form.days.includes(d.day)}
+                  data-tip={form.days.includes(d.day) ? `Stop running on ${d.short}` : `Also run on ${d.short}`}
                   onClick={() => set({ days: toggleDay(form.days, d.day) })}
                 >
                   {d.initial}

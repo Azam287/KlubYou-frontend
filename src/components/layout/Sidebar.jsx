@@ -4,14 +4,16 @@ import { LogoMark } from "../common/Brand";
 import { useAppData } from "../../context/AppDataContext";
 
 const NAV_ITEMS = [
-  { to: "/dashboard", end: true, icon: "overview", label: "Overview" },
-  { to: "/dashboard/page", icon: "page", label: "My page" },
-  { to: "/dashboard/classes", icon: "classes", label: "Everyday Lessons" },
-  { to: "/dashboard/schedule", icon: "calendar", label: "Schedule" },
-  { to: "/dashboard/programmes", icon: "programmes", label: "Programmes" },
-  { to: "/dashboard/membership", icon: "voucher", label: "Membership" },
-  { to: "/dashboard/members", icon: "members", label: "Members" },
-  { to: "/dashboard/payments", icon: "payments", label: "Payments" },
+  { to: "/dashboard", end: true, icon: "overview", label: "Overview", tip: "How your studio is doing, and what needs you" },
+  { to: "/dashboard/page", icon: "page", label: "My page", tip: "Your public page" },
+  { to: "/dashboard/classes", icon: "classes", label: "Everyday Lessons", tip: "Classes that come with the subscription" },
+  { to: "/dashboard/schedule", icon: "calendar", label: "Schedule", tip: "Every class and lesson, week by week" },
+  { to: "/dashboard/programmes", icon: "programmes", label: "Programmes", tip: "Courses and video series people buy" },
+  { to: "/dashboard/attendance", icon: "check", label: "Attendance", tip: "Who came to your live classes and lessons" },
+  { to: "/dashboard/membership", icon: "voucher", label: "Membership", tip: "Plans, bundles and extra benefits" },
+  { to: "/dashboard/members", icon: "members", label: "Members", tip: "Everyone who has joined" },
+  { to: "/dashboard/payments", icon: "payments", label: "Payments", tip: "What you've earned and what's waiting" },
+  { to: "/dashboard/settings", icon: "settings", label: "Settings", tip: "Studio name, page address, currency and time zone" },
 ];
 
 export default function Sidebar() {
@@ -27,6 +29,8 @@ export default function Sidebar() {
       <nav className="nav">
         {NAV_ITEMS.map((item) => (
           <NavLink
+            data-tip={item.tip}
+            data-tip-side="right"
             key={item.to}
             to={item.to}
             end={item.end}

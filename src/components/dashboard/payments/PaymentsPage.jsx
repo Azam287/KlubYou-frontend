@@ -5,11 +5,12 @@ import { useToast } from "../../../context/ToastContext";
 import Icon from "../../common/Icon";
 import ConfirmModal from "../../common/ConfirmModal";
 import Pagination from "../../common/Pagination";
+import SearchInput from "../../common/SearchInput";
 import AccessFilter from "../shared/AccessFilter";
 import MemberDetailModal from "../members/MemberDetailModal";
 import PaymentTable from "./PaymentTable";
 import { FEE_LABEL, money, money2 } from "../../../lib/stats";
-import { formatDayMonth } from "../../../lib/datetime";
+import { formatDay, formatDayMonth } from "../../../lib/datetime";
 import { mailtoFor, paymentLabel } from "../../../lib/members";
 import {
   STATUS_FILTERS,
@@ -30,7 +31,8 @@ const NO_FILTERS = { status: "all", access: "all", search: "" };
 // out from the payment rows, which point at members and at the plans and
 // offers they paid for — the same rows the members page reads.
 export default function PaymentsPage() {
-  const { payments, members, studioPlans, programmes, bundles, everydayLessons, markPaymentPaid } = useAppData();
+  const { payments, members, studioPlans, programmes, bundles, everydayLessons, attendance, markPaymentPaid } =
+    useAppData();
   const { showToast } = useToast();
 
   const [filters, setFilters] = useState(NO_FILTERS);
@@ -46,8 +48,8 @@ export default function PaymentsPage() {
   const [markId, setMarkId] = useState(null);
 
   const ctx = useMemo(
-    () => ({ plans: studioPlans, programmes, payments, bundles, lessons: everydayLessons }),
-    [studioPlans, programmes, payments, bundles, everydayLessons]
+    () => ({ plans: studioPlans, programmes, payments, bundles, lessons: everydayLessons, attendance }),
+    [studioPlans, programmes, payments, bundles, everydayLessons, attendance]
   );
   const memberOf = useMemo(() => {
     const byId = new Map(members.map((m) => [m.id, m]));
@@ -124,9 +126,7 @@ export default function PaymentsPage() {
         <div className="msum-b" data-tip="Paid out every Friday: what came in since the last payout, after the fee">
           <span>Next payout</span>
           <b>{money(summary.payout.amount)}</b>
-          <small className="msum-sub">
-            {summary.payout.on.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}
-          </small>
+          <small className="msum-sub">{formatDay(summary.payout.on)}</small>
         </div>
         <div className="msum-b" data-tip={`KlubYou keeps ${FEE_LABEL} of every payment`}>
           <span>KlubYou fee ({FEE_LABEL})</span>
@@ -158,15 +158,12 @@ export default function PaymentsPage() {
           programmes={programmes}
           allLabel="Everything paid for"
         />
-        <div className="search">
-          <Icon name="search" size={16} color="#5B5470" />
-          <input
-            value={filters.search}
-            onChange={(e) => refilter({ search: e.target.value })}
-            placeholder="Search by member or email"
-            aria-label="Search payments by member name or email"
-          />
-        </div>
+        <SearchInput
+          value={filters.search}
+          onChange={(search) => refilter({ search })}
+          placeholder="Search by member or email"
+          label="Search payments by member name or email"
+        />
       </div>
 
       <PaymentTable

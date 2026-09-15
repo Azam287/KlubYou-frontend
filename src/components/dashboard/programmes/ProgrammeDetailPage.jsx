@@ -34,12 +34,18 @@ import {
   sortedClasses,
 } from "../../../lib/programme";
 import { memberStats, programmeBuyers } from "../../../lib/stats";
+import { sessionOf, sessionReport } from "../../../lib/attendance";
+import { attendancePathOf, classSessionId, classTarget, joinLinkOf } from "../../../lib/sessions";
 
 export default function ProgrammeDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const {
+    studio,
     programmes,
+    bundles,
+    everydayLessons,
+    attendance,
     members,
     payments,
     studioPlans,
@@ -88,10 +94,21 @@ export default function ProgrammeDetailPage() {
 
   const studioSubscribers = useMemo(() => memberStats(members).studio, [members]);
 
+  // Each class's attendance, looked up by the class. Asked for per row rather
+  // than all at once, since only classes that have started have any.
+  const reportOf = useMemo(() => {
+    const data = { members, plans: studioPlans, bundles, programmes, lessons: everydayLessons, attendance };
+    return (cls) => {
+      const session = sessionOf(classSessionId(id, cls.id), data);
+      return session ? sessionReport(session, data) : null;
+    };
+  }, [id, members, studioPlans, bundles, programmes, everydayLessons, attendance]);
+  const classLinkOf = (cls) => joinLinkOf(studio.handle, classTarget(id, cls.id));
+
   if (!programme) {
     return (
       <section className="panel">
-        <button className="backlink" onClick={() => navigate("/dashboard/programmes")}>
+        <button className="backlink" data-tip="Back to all programmes" onClick={() => navigate("/dashboard/programmes")}>
           <Icon name="back" size={16} strokeWidth={2} /> All programmes
         </button>
         <p>That programme couldn't be found.</p>
@@ -129,7 +146,7 @@ export default function ProgrammeDetailPage() {
 
   return (
     <section className="panel">
-      <button className="backlink" onClick={() => navigate("/dashboard/programmes")}>
+      <button className="backlink" data-tip="Back to all programmes" onClick={() => navigate("/dashboard/programmes")}>
         <Icon name="back" size={16} strokeWidth={2} /> All programmes
       </button>
 
@@ -149,25 +166,39 @@ export default function ProgrammeDetailPage() {
           <p>{programme.description}</p>
         </div>
         <div className="pd-actions">
-          <button className="btn btn-ghost" onClick={() => setPreviewOpen(true)}>
+          <button
+            className="btn btn-ghost"
+            onClick={() => setPreviewOpen(true)}
+            data-tip="See the page a buyer sees before paying"
+          >
             Preview as member
           </button>
-          <button className="btn btn-ghost" onClick={() => setDetailsOpen(true)}>
+          <button
+            className="btn btn-ghost"
+            onClick={() => setDetailsOpen(true)}
+            data-tip="Change the name, description, cover and dates"
+          >
             Edit details
           </button>
           {published && (
-            <button className="btn btn-ghost" onClick={() => unpublishProgramme(programme.id)}>
+            <button
+              className="btn btn-ghost"
+              onClick={() => unpublishProgramme(programme.id)}
+              data-tip="Take it off your page and off sale — it goes back to a draft"
+            >
               Unpublish
             </button>
           )}
           {/* A programme could be made but never unmade — the only thing in the
               app with no way out. */}
           <KebabMenu
+            tip="More actions for this programme"
             items={[
               {
                 label: "Delete programme",
                 icon: "trash",
                 danger: true,
+                tip: "Delete it for good — asks first",
                 onClick: () => setDeleteOpen(true),
               },
             ]}
@@ -180,6 +211,7 @@ export default function ProgrammeDetailPage() {
           programme={programme}
           members={members}
           payments={payments}
+          attendance={attendance}
           studioSubscribers={studioSubscribers}
         />
       ) : (
@@ -204,7 +236,10 @@ export default function ProgrammeDetailPage() {
           onChangeTiming={(cls) => setTimingTarget(cls)}
           onToggleActive={(cls) => toggleClassActive(programme.id, cls.id)}
           onDeleteClass={(cls) => setDeleteTarget(cls)}
-          onCopyLink={(url) => copyToClipboard(url, "Class link copied")}
+          linkOf={classLinkOf}
+          reportOf={reportOf}
+          onCopyLink={(cls) => copyToClipboard(`https://${classLinkOf(cls)}`, "Members' link copied")}
+          onOpenAttendance={(cls) => navigate(attendancePathOf(classSessionId(id, cls.id)))}
           onSetDates={() => setDetailsOpen(true)}
         />
       )}
@@ -242,14 +277,19 @@ export default function ProgrammeDetailPage() {
             </div>
             <div className={`share-link${published ? "" : " off"}`}>
               <span>{programme.pricing?.shareUrl}</span>
-              <button
-                className="copy"
-                title="Copy link"
-                disabled={!published}
-                onClick={() => copyToClipboard(`https://${programme.pricing?.shareUrl}`, "Link copied")}
+              <span
+                className="tip-wrap"
+                data-tip={published ? "Copy the link to share" : "Publish it first — then there's a link to share"}
               >
-                <Icon name="copy" size={15} strokeWidth={1.7} />
-              </button>
+                <button
+                  className="copy"
+                  aria-label="Copy share link"
+                  disabled={!published}
+                  onClick={() => copyToClipboard(`https://${programme.pricing?.shareUrl}`, "Link copied")}
+                >
+                  <Icon name="copy" size={15} strokeWidth={1.7} />
+                </button>
+              </span>
             </div>
           </div>
           <div className="qr">

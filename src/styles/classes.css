@@ -142,3 +142,22 @@
 .sec-head h3 {
   font-size: 1.05rem;
 }
+
+.lcard-link .jlink-url {
+  font-size: 0.84rem;
+  max-width: 280px;
+}
+.lcard-att {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 8px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--good);
+  text-decoration: none;
+}
+.lcard-att:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

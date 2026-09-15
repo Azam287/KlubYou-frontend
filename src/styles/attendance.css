@@ -1,0 +1,271 @@
+/* ---------- attendance ---------- */
+
+.att-now {
+  align-items: center;
+}
+.att-now .btn {
+  margin-left: auto;
+}
+
+/* A session name that opens it: reads as a name, not a button. */
+.att-name {
+  display: block;
+  text-decoration: none;
+  font-weight: 700;
+}
+.att-name:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.att-name small {
+  display: block;
+  font-weight: 500;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+}
+.att-pill {
+  margin-left: 0.5rem;
+}
+
+.att-came {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+.att-bar {
+  display: inline-block;
+  width: 64px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line-soft);
+  overflow: hidden;
+  margin-left: 0.3rem;
+}
+.att-bar i {
+  display: block;
+  height: 100%;
+  background: var(--good);
+  border-radius: inherit;
+}
+
+.att-quiet {
+  margin-bottom: 20px;
+}
+.att-quiet-l {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px 20px;
+}
+.att-quiet-l li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+/* ---------- one session ---------- */
+
+.att-link {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.att-link-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1 1 360px;
+  min-width: 0;
+}
+.att-link-main .hint {
+  margin: 0;
+}
+.att-host {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 0 1 260px;
+  min-width: 0;
+}
+.att-host small {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  overflow-wrap: anywhere;
+}
+
+/* The members' link: the label, the address, and its copy button. */
+.jlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  max-width: 100%;
+  min-width: 0;
+}
+.jlink-l {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  flex: none;
+}
+.jlink-url {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+/* Where a members' link sends people, written after the link. */
+.jlink-host {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.jlink .copy {
+  width: 28px;
+  height: 28px;
+}
+
+.att-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* Arrivals in five-minute steps. The steps before the start are paler. */
+.att-tl {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 120px;
+  border-bottom: 1px solid var(--line);
+}
+.att-tl-b {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+.att-tl-b i {
+  display: block;
+  width: 100%;
+  min-height: 2px;
+  background: var(--ink);
+  border-radius: 4px 4px 0 0;
+}
+.att-tl-b.early i {
+  background: #9e97b2;
+}
+.att-tl-b.start {
+  box-shadow: -2px 0 0 var(--coral);
+}
+.att-tl-x {
+  position: relative;
+  height: 1.4rem;
+  font-size: 0.74rem;
+  color: var(--ink-soft);
+  margin-bottom: 8px;
+}
+.att-tl-x span {
+  position: absolute;
+  top: 4px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.att-tl-x span:first-child {
+  transform: none;
+}
+.att-tl-x span:last-child {
+  transform: translateX(-100%);
+}
+
+/* Recent sessions, one bar each; the one you're on is outlined. */
+.att-hist {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  height: 150px;
+}
+.att-hist-b {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  border-radius: 8px;
+  padding: 4px 2px;
+}
+.att-hist-b:hover,
+.att-hist-b.on {
+  background: var(--line-soft);
+}
+.att-hist-b b {
+  font-size: 0.82rem;
+}
+.att-hist-bar {
+  flex: 1;
+  width: 60%;
+  max-width: 28px;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(34, 26, 56, 0.05);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.att-hist-bar i {
+  display: block;
+  width: 100%;
+  background: #9e97b2;
+}
+.att-hist-b.on .att-hist-bar i {
+  background: var(--coral);
+}
+.att-hist-b small {
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.att-roster-h {
+  padding: 0 12px;
+  flex-wrap: wrap;
+}
+.att-roster-h .chips {
+  margin-left: auto;
+}
+.att-arr {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.att-first {
+  margin-left: 0.45rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(46, 125, 80, 0.12);
+  color: var(--good);
+  font-size: 0.7rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+.att-act {
+  white-space: nowrap;
+}
+.att-act > * {
+  vertical-align: middle;
+}
+.att-act .menu {
+  display: inline-block;
+  margin-left: 0.3rem;
+}
