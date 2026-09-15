@@ -1,0 +1,223 @@
+/* ---------- members ---------- */
+
+/* The name opens the member, so it's a button that looks like the name. */
+.who-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.who-btn:hover > span:last-child {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.mem-access small {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+}
+/* A plan or programme that's gone: still shown, so the member isn't lost. */
+.mem-access.missing {
+  color: var(--ink-soft);
+  font-style: italic;
+}
+.mem-empty td {
+  text-align: center;
+  color: var(--ink-soft);
+  padding: 24px 0;
+}
+.mem-empty .btn {
+  margin-left: 0.4rem;
+}
+
+/* Sortable column headings. */
+.th-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.th-sort:hover,
+.th-sort.on {
+  color: var(--ink);
+}
+.th-sort-ic {
+  opacity: 0;
+  transition: transform 0.15s;
+}
+.th-sort.on .th-sort-ic,
+.th-sort:hover .th-sort-ic {
+  opacity: 1;
+}
+.th-sort-ic.up {
+  transform: rotate(180deg);
+}
+
+/* ---------- a member's details ---------- */
+.md-head {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 16px;
+}
+.md-head b {
+  display: block;
+  font-family: "Bricolage Grotesque";
+  font-size: 1.15rem;
+}
+.md-head small {
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+.md-head .pill {
+  margin-left: auto;
+}
+.md-av {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: #d8d2e6;
+  color: #3a2e63;
+  font-family: "Bricolage Grotesque";
+  font-weight: 700;
+  flex: none;
+}
+.md-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 18px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+}
+.md-facts dt {
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.md-facts dd {
+  margin: 2px 0 0;
+  font-weight: 600;
+}
+.md-facts dd small {
+  display: block;
+  font-weight: 500;
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+}
+.md-h {
+  margin: 16px 0 8px;
+  font-size: 0.95rem;
+}
+.md-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.md-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.md-list li > span:first-child {
+  flex: 1;
+  min-width: 0;
+}
+.md-list small {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+}
+.md-code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: var(--paper);
+  border-radius: 6px;
+  padding: 0.05rem 0.4rem;
+}
+.danger-text {
+  color: var(--coral-deep);
+}
+
+/* ---------- on a phone: a card per member ----------
+   Seven columns don't fit, and scrolling a table sideways loses the name. Each
+   row becomes a card with the name on top and labelled lines under it. */
+@media (max-width: 860px) {
+  .mtbl {
+    min-width: 0;
+  }
+  .mtbl thead {
+    display: none;
+  }
+  .mtbl,
+  .mtbl tbody,
+  .mtbl tr,
+  .mtbl td {
+    display: block;
+    width: 100%;
+  }
+  .mtbl tr {
+    position: relative;
+    padding: 12px 12px 8px;
+    border-top: 1px solid var(--line-soft);
+  }
+  .mtbl tr:first-child {
+    border-top: none;
+  }
+  .mtbl td {
+    border-top: none;
+    padding: 4px 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    text-align: right;
+    font-size: 0.88rem;
+  }
+  .mtbl td[data-label]::before {
+    content: attr(data-label);
+    color: var(--ink-soft);
+    font-weight: 600;
+    text-align: left;
+  }
+  .mtbl td.mem-who {
+    padding-right: 40px;
+    margin-bottom: 4px;
+  }
+  .mtbl td.mem-act {
+    position: absolute;
+    top: 12px;
+    right: 8px;
+    width: auto;
+    padding: 0;
+  }
+  .mtbl .mem-empty td {
+    display: block;
+    text-align: center;
+  }
+  .md-facts {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* A line under a summary figure: the split, the date, the count. */
+.msum-sub {
+  display: block;
+  margin-top: 1px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}

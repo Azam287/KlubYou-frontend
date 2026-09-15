@@ -9,6 +9,9 @@ export default function ConfirmModal({
   message,
   detail,
   confirmLabel = "Delete",
+  // Optional tooltips for the two buttons.
+  confirmTip,
+  cancelTip,
   onConfirm,
   onClose,
 }) {
@@ -20,13 +23,14 @@ export default function ConfirmModal({
       maxWidth={440}
       footer={
         <>
-          <button className="btn btn-ghost" onClick={onClose}>
+          <button className="btn btn-ghost" onClick={onClose} data-tip={cancelTip}>
             Cancel
           </button>
           {/* Coral, matching the class-deletion modal — this app has no separate
               danger colour, and inventing one here would make two. */}
           <button
             className="btn btn-coral"
+            data-tip={confirmTip}
             onClick={() => {
               onConfirm();
               onClose();

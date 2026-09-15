@@ -20,11 +20,29 @@ export const initialStudio = {
   about:
     "Hi, I'm Maya. I've taught vinyasa and breathwork for eight years. Join me for calm, strong weekday morning classes — live and from anywhere.",
   handle: "maya",
-  coverGradient: "linear-gradient(120deg,#3a2e63,#241a3d)",
-  // Creator-entered profile facts, not computed stats — these are things Maya
-  // types about herself, so they stay editable rather than derived.
-  rating: 4.9,
-  classesPerWeek: 5,
+  // The public page. Only these are stored — what it sells comes from the
+  // Membership and Programmes pages. See lib/page.js.
+  // The picture across the top of the page, as a data URL. Empty uses a band
+  // tinted from the page colours.
+  coverImage: "",
+  // A photo or logo for the round avatar. Empty shows the studio's initial.
+  avatarImage: "",
+  // A real, openly licensed video (Blender's "Big Buck Bunny") so the demo
+  // player has something to play. A creator pastes their own link here.
+  introVideo: "https://youtu.be/aqz-KE-bpKQ",
+  // A label is optional: well-known sites are named from the URL.
+  links: [
+    { id: "ln1", label: "", url: "instagram.com/mayayoga" },
+    { id: "ln2", label: "", url: "youtube.com/@mayayoga" },
+    { id: "ln3", label: "My journal", url: "mayayoga.co.uk/journal" },
+  ],
+  theme: { background: "#f6f1ea", text: "#221a38", accent: "#3a2e63" },
+  // Published programmes kept off the page. Empty shows them all.
+  hiddenProgrammes: [],
+  // The order of the sections under the name and tagline.
+  sectionOrder: ["about", "video", "links", "memberships", "programmes"],
+  // Sections switched off. Hidden, not deleted — their content stays.
+  hiddenSections: [],
 };
 
 export const coverSwatches = [
@@ -34,18 +52,14 @@ export const coverSwatches = [
   { id: "amber", color: "#E39A2C", gradient: "linear-gradient(120deg,#E39A2C,#c97e1b)" },
 ];
 
-// Tier 1 of access: one studio-wide subscription that unlocks every programme.
-// One subscription, sold by length. `listPrice` is what it would cost at the
-// undiscounted monthly rate — the saving and the percentage are worked out from
-// it rather than stored, so a badge can never outrun the prices beside it.
-// The old `length` and `price` strings are gone: they duplicated `months` and
-// `amount`, and would have started lying the moment a price was edited.
-// `programmes: null` bundles everything published; an array bundles just those.
-// The shorter plans deliberately carry less, which is what makes the longer
-// ones worth their price.
+// The membership: plans people buy, the bundles those plans open, and extra
+// benefits. Every one of the three is a draft or published; only published
+// ones reach members. See docs/domain.md.
+//
 // Bundles are named sets of content that plans draw on. The same bundle can
 // back several plans, which is the point of having them separate — describing
-// "the daily classes" twice is how two plans drift apart.
+// "the daily classes" twice is how two plans drift apart. A bundle is always an
+// explicit list; "everything" is something only a plan can be.
 //
 // `order` is shared with the extras: one sequence decides the row order of the
 // membership table, so a bundle can sit between two extras.
@@ -132,154 +146,148 @@ export const initialMembershipFeatures = [
   { id: "mf4", status: "draft", order: 7, title: "Pause your plan anytime", detail: "Up to 4 weeks a year" },
 ];
 
-export const initialPagePlans = [
-  { key: "studio", label: "Studio subscription", on: true },
-  { key: "programmes", label: "Individual programmes", on: true },
-  { key: "dropin", label: "Drop-in", on: false },
-];
-
 export const takenHandles = ["yoga", "maya123", "studio", "flow", "admin", "test"];
 
 /* ---------- members ---------- */
 
-const initials = (name) =>
-  name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase();
-
-// plan: "studio" (subscription to everything) | "programme" (bought one) | "none" (lead)
+// A member points at what they bought — a Membership plan (`planId`) or one
+// programme offer (`programmeId` + `offerId`) — so the members page reads its
+// names and prices from those, not from copies. See lib/members.js.
+//
+// plan: "studio" (on a membership plan) | "programme" (bought one programme) | "none" (lead)
 const member = (id, name, email, plan, opts = {}) => ({
   id,
   name,
-  initials: initials(name),
   email,
   plan,
-  status: opts.status || "active",
-  planLength: opts.planLength || null,
+  status: opts.status || (plan === "none" ? "lead" : "active"),
+  planId: opts.planId || null,
   programmeId: opts.programmeId || null,
+  offerId: opts.offerId || null,
   joinedAt: opts.joinedAt,
+  // When paid time runs out. Null for a programme bought once (lifetime).
   renewsAt: opts.renewsAt || null,
+  // False once a subscription is stopped: access runs to renewsAt, then ends.
+  autoRenew: opts.autoRenew ?? true,
+  // Classes attended (memberships and live programmes); videos watched
+  // (recorded programmes). The "out of" is worked out, never stored.
   attended: opts.attended ?? 0,
-  attendedOf: opts.attendedOf ?? 0,
+  watched: opts.watched ?? 0,
+  vouchers: [],
 });
 
+// Plans: sp3 Full studio year (12 months) · sp2 Half year (6) · sp1 Starter (1).
+// Offers: morning-vinyasa of1 £40 once / of2 £12 a month · breathwork-basics of4 £35 once.
 export const initialMembers = [
-  // --- studio subscribers ---
+  // --- on a membership plan ---
   member("m1", "Emma Carter", "emma@email.com", "studio", {
-    planLength: "12 months", joinedAt: monthsAgo(19), renewsAt: monthsAhead(5), attended: 34, attendedOf: 38,
+    planId: "sp3", joinedAt: monthsAgo(19), renewsAt: monthsAhead(5), attended: 34,
   }),
   member("m2", "Sam Kelly", "sam.k@email.com", "studio", {
-    planLength: "6 months", joinedAt: monthsAgo(13), renewsAt: monthsAhead(5), attended: 9, attendedOf: 10,
+    planId: "sp2", joinedAt: monthsAgo(13), renewsAt: monthsAhead(5), attended: 9,
   }),
   member("m3", "Tom Reid", "tom@email.com", "studio", {
-    planLength: "1 month", joinedAt: monthsAgo(13), renewsAt: atOffset(3, 9), attended: 6, attendedOf: 8,
+    planId: "sp1", joinedAt: monthsAgo(13), renewsAt: atOffset(3, 9), attended: 6,
   }),
   member("m7", "Priya Shah", "priya@email.com", "studio", {
-    planLength: "12 months", joinedAt: monthsAgo(10), renewsAt: monthsAhead(2), attended: 41, attendedOf: 44,
+    planId: "sp3", joinedAt: monthsAgo(10), renewsAt: monthsAhead(2), attended: 41,
   }),
   member("m8", "Daniel Okoro", "dan.o@email.com", "studio", {
-    planLength: "6 months", joinedAt: monthsAgo(8), renewsAt: monthsAhead(1), attended: 22, attendedOf: 30,
+    // Stopped: keeps access to the end of what he paid for, then it ends.
+    planId: "sp2", joinedAt: monthsAgo(8), renewsAt: monthsAhead(1), autoRenew: false, attended: 22,
   }),
   member("m9", "Hannah Brooks", "hannah@email.com", "studio", {
-    planLength: "1 month", joinedAt: monthsAgo(6), renewsAt: atOffset(5, 9), attended: 12, attendedOf: 16,
+    planId: "sp1", joinedAt: monthsAgo(6), renewsAt: atOffset(5, 9), attended: 12,
   }),
   member("m10", "Marcus Webb", "marcus@email.com", "studio", {
-    planLength: "6 months", joinedAt: monthsAgo(5), renewsAt: monthsAhead(1), attended: 18, attendedOf: 24,
+    planId: "sp2", joinedAt: monthsAgo(5), renewsAt: monthsAhead(1), attended: 18,
   }),
   member("m11", "Sofia Ricci", "sofia@email.com", "studio", {
-    planLength: "12 months", joinedAt: monthsAgo(4), renewsAt: monthsAhead(8), attended: 25, attendedOf: 26,
+    planId: "sp3", joinedAt: monthsAgo(4), renewsAt: monthsAhead(8), attended: 25,
   }),
   member("m12", "Leo Barnes", "leo.b@email.com", "studio", {
-    planLength: "1 month", joinedAt: monthsAgo(3), renewsAt: atOffset(12, 9), attended: 7, attendedOf: 12,
+    planId: "sp1", joinedAt: monthsAgo(3), renewsAt: atOffset(12, 9), attended: 7,
   }),
   member("m13", "Amara Diallo", "amara@email.com", "studio", {
-    planLength: "6 months", joinedAt: monthsAgo(2), renewsAt: monthsAhead(4), attended: 14, attendedOf: 15,
+    planId: "sp2", joinedAt: monthsAgo(2), renewsAt: monthsAhead(4), attended: 14,
   }),
   member("m14", "Ruth Nakamura", "ruth@email.com", "studio", {
-    planLength: "12 months", joinedAt: monthsAgo(2), renewsAt: monthsAhead(10), attended: 11, attendedOf: 13,
+    planId: "sp3", joinedAt: monthsAgo(2), renewsAt: monthsAhead(10), attended: 11,
   }),
   member("m15", "Chris Doyle", "chris@email.com", "studio", {
-    planLength: "1 month", joinedAt: atOffset(-5), renewsAt: atOffset(25, 9), attended: 2, attendedOf: 2,
+    planId: "sp1", joinedAt: atOffset(-5), renewsAt: atOffset(25, 9), attended: 2,
   }),
 
-  // --- bought a single programme ---
+  // --- bought a programme ---
   member("m4", "Aisha Mahmood", "aisha@email.com", "programme", {
-    programmeId: "morning-vinyasa", joinedAt: monthsAgo(1, 12), renewsAt: monthsAhead(1, 12), attended: 4, attendedOf: 5,
+    programmeId: "morning-vinyasa", offerId: "of1", joinedAt: monthsAgo(1, 12), attended: 1,
   }),
   member("m16", "Grace Lam", "grace@email.com", "programme", {
-    programmeId: "morning-vinyasa", joinedAt: monthsAgo(1, 20), renewsAt: null, attended: 3, attendedOf: 5,
+    programmeId: "morning-vinyasa", offerId: "of1", joinedAt: monthsAgo(1, 20), attended: 1,
   }),
   member("m17", "Owen Pritchard", "owen@email.com", "programme", {
-    programmeId: "breathwork-basics", joinedAt: monthsAgo(2, 8), renewsAt: null, attended: 4, attendedOf: 4,
+    programmeId: "breathwork-basics", offerId: "of4", joinedAt: monthsAgo(2, 8), watched: 3,
   }),
   member("m18", "Nina Fischer", "nina@email.com", "programme", {
-    programmeId: "breathwork-basics", joinedAt: atOffset(-9), renewsAt: null, attended: 2, attendedOf: 4,
+    programmeId: "breathwork-basics", offerId: "of4", joinedAt: atOffset(-9), watched: 2,
   }),
   member("m19", "Yusuf Karim", "yusuf@email.com", "programme", {
-    programmeId: "restore-sleep", joinedAt: monthsAgo(1, 3), renewsAt: monthsAhead(1, 3), attended: 3, attendedOf: 4,
+    programmeId: "morning-vinyasa", offerId: "of2", joinedAt: monthsAgo(1, 3), renewsAt: monthsAhead(1, 3), attended: 1,
   }),
   member("m20", "Beatrice Cole", "bea@email.com", "programme", {
-    programmeId: "breathwork-basics", joinedAt: atOffset(-2), renewsAt: null, attended: 1, attendedOf: 4,
+    programmeId: "breathwork-basics", offerId: "of4", joinedAt: atOffset(-2), watched: 1,
   }),
 
-  // --- leads: visited the page, haven't bought ---
-  member("m5", "Nadia Popescu", "nadia@email.com", "none", { status: "lead", joinedAt: atOffset(-4) }),
-  member("m21", "Felix Andersen", "felix@email.com", "none", { status: "lead", joinedAt: atOffset(-1) }),
-  member("m22", "Joy Adeyemi", "joy@email.com", "none", { status: "lead", joinedAt: atOffset(-6) }),
+  // --- leads: signed up on the page, haven't bought ---
+  member("m5", "Nadia Popescu", "nadia@email.com", "none", { joinedAt: atOffset(-4) }),
+  member("m21", "Felix Andersen", "felix@email.com", "none", { joinedAt: atOffset(-1) }),
+  member("m22", "Joy Adeyemi", "joy@email.com", "none", { joinedAt: atOffset(-6) }),
 
   // --- lapsed ---
   member("m6", "Jon Lewis", "jon@email.com", "programme", {
-    status: "inactive", programmeId: "breathwork-basics", joinedAt: monthsAgo(15), renewsAt: monthsAgo(2), attended: 11, attendedOf: 20,
+    // A monthly programme subscription he stopped — a programme bought once
+    // can't lapse, so it isn't one of those.
+    status: "inactive", programmeId: "morning-vinyasa", offerId: "of2", joinedAt: monthsAgo(3), renewsAt: monthsAgo(2), autoRenew: false,
   }),
   member("m23", "Clara Mendes", "clara@email.com", "studio", {
-    status: "inactive", planLength: "1 month", joinedAt: monthsAgo(9), renewsAt: monthsAgo(4), attended: 8, attendedOf: 19,
+    status: "inactive", planId: "sp1", joinedAt: monthsAgo(9), renewsAt: monthsAgo(4), autoRenew: false, attended: 8,
   }),
   member("m24", "Ben Whitfield", "ben@email.com", "studio", {
-    status: "inactive", planLength: "6 months", joinedAt: monthsAgo(14), renewsAt: monthsAgo(1), attended: 16, attendedOf: 32,
+    status: "inactive", planId: "sp2", joinedAt: monthsAgo(14), renewsAt: monthsAgo(1), autoRenew: false, attended: 16,
   }),
 ];
 
 /* ---------- payments ---------- */
 
-// `keep` isn't stored: it's always amount minus the platform fee, so deriving it
-// means the two columns can never disagree. `programmeId` is what makes
-// per-programme revenue countable — it used to be a display string only.
-const payment = (id, memberId, forWhat, amount, paidAt, opts = {}) => ({
+// `keep` isn't stored: it's always amount minus the platform fee. A payment
+// points at what it paid for — a plan, or a programme offer — and its label is
+// worked out from that (lib/members.js → paymentLabel), so it follows renames.
+const payment = (id, memberId, target, amount, paidAt, opts = {}) => ({
   id,
   memberId,
-  for: forWhat,
+  planId: target.planId || null,
+  programmeId: target.programmeId || null,
+  offerId: target.offerId || null,
   amount,
   paidAt,
   status: opts.status || "paid",
-  programmeId: opts.programmeId || null,
 });
 
 export const initialPayments = [
-  payment("p1", "m2", "Studio · 6 months", 92, atOffset(-2, 10)),
-  payment("p2", "m4", "Morning Vinyasa", 40, atOffset(-2, 14), { programmeId: "morning-vinyasa" }),
-  payment("p3", "m15", "Studio · 1 month", 18, atOffset(-5, 9)),
-  payment("p4", "m20", "Breathwork Basics", 35, atOffset(-2, 16), { programmeId: "breathwork-basics" }),
-  payment("p5", "m16", "Morning Vinyasa", 40, atOffset(-7, 11), { programmeId: "morning-vinyasa" }),
-  payment("p6", "m14", "Studio · 12 months", 162, atOffset(-9, 13)),
-  payment("p7", "m18", "Breathwork Basics", 35, atOffset(-9, 15), { programmeId: "breathwork-basics" }),
-  payment("p8", "m13", "Studio · 6 months", 92, atOffset(-12, 10)),
-  payment("p9", "m19", "Restore & Sleep", 20, atOffset(-14, 18), { programmeId: "restore-sleep" }),
-  payment("p10", "m12", "Studio · 1 month", 18, atOffset(-16, 12)),
-  // Pending rows — the Payments page's "pending" figure counts exactly these.
-  payment("p11", "m3", "Studio · 1 month", 18, atOffset(-1, 9), { status: "pending" }),
-  payment("p12", "m9", "Studio · 1 month", 18, atOffset(-1, 11), { status: "pending" }),
-];
-
-/* ---------- overview activity ---------- */
-
-export const initialActivity = [
-  { id: "a1", icon: "money", text: ["Sam Kelly", " paid £92 for the 6-month studio plan"], when: "12 min ago" },
-  { id: "a2", icon: "user", text: ["Beatrice Cole", " bought Breathwork Basics"], when: "1 hr ago" },
-  { id: "a3", icon: "clock", text: ["Tom Reid", "'s studio plan renews in 3 days"], when: "2 hr ago" },
-  { id: "a4", icon: "cert", text: ["Owen Pritchard", " finished Breathwork Basics — certificate sent"], when: "Yesterday" },
+  payment("p1", "m2", { planId: "sp2" }, 92, atOffset(-2, 10)),
+  payment("p2", "m4", { programmeId: "morning-vinyasa", offerId: "of1" }, 40, atOffset(-2, 14)),
+  payment("p3", "m15", { planId: "sp1" }, 18, atOffset(-5, 9)),
+  payment("p4", "m20", { programmeId: "breathwork-basics", offerId: "of4" }, 35, atOffset(-2, 16)),
+  payment("p5", "m16", { programmeId: "morning-vinyasa", offerId: "of1" }, 40, atOffset(-7, 11)),
+  payment("p6", "m14", { planId: "sp3" }, 162, atOffset(-9, 13)),
+  payment("p7", "m18", { programmeId: "breathwork-basics", offerId: "of4" }, 35, atOffset(-9, 15)),
+  payment("p8", "m13", { planId: "sp2" }, 92, atOffset(-12, 10)),
+  payment("p9", "m19", { programmeId: "morning-vinyasa", offerId: "of2" }, 12, atOffset(-14, 18)),
+  payment("p10", "m12", { planId: "sp1" }, 18, atOffset(-16, 12)),
+  // Pending renewals — the Payments page's "pending" figure counts exactly
+  // these, and the members page shows these two members as "Payment due".
+  payment("p11", "m3", { planId: "sp1" }, 18, atOffset(-1, 9), { status: "pending" }),
+  payment("p12", "m9", { planId: "sp1" }, 18, atOffset(-1, 11), { status: "pending" }),
 ];
 
 /* ---------- everyday lessons ---------- */

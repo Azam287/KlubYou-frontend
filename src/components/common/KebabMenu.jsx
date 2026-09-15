@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
 
-// items: [{ label, icon, danger?, onClick }] — pass `null` for a divider.
-export default function KebabMenu({ items, size = "md" }) {
+// items: [{ label, icon, danger?, tip?, onClick }] — pass `null` for a divider.
+// `tip` on the menu describes the trigger; `tip` on an item says what choosing
+// it will do, shown beside the menu so it doesn't cover the items above.
+export default function KebabMenu({ items, size = "md", tip }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -23,6 +25,7 @@ export default function KebabMenu({ items, size = "md" }) {
         aria-haspopup="true"
         aria-expanded={open}
         aria-label="Open menu"
+        data-tip={open ? undefined : tip}
       >
         <Icon name="kebab" size={size === "sm" ? 16 : 18} />
       </button>
@@ -35,6 +38,8 @@ export default function KebabMenu({ items, size = "md" }) {
               <button
                 key={item.label}
                 className={item.danger ? "danger" : undefined}
+                data-tip={item.tip}
+                data-tip-side={item.tip ? "left" : undefined}
                 onClick={() => {
                   setOpen(false);
                   item.onClick();

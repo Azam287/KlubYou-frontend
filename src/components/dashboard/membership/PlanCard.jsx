@@ -59,21 +59,44 @@ export default function PlanCard({
           </div>
           <KebabMenu
             size="sm"
+            tip="Edit, publish or remove this plan"
             items={[
-              { label: "Edit plan", icon: "link", onClick: () => onEdit(plan) },
+              {
+                label: "Edit plan",
+                icon: "link",
+                tip: "Change its name, description, length and price",
+                onClick: () => onEdit(plan),
+              },
               {
                 label: isLiveItem(plan) ? "Unpublish" : "Publish",
                 icon: isLiveItem(plan) ? "eyeOff" : "eye",
+                tip: isLiveItem(plan)
+                  ? "Take it off sale — members already on it keep it"
+                  : "Put it on sale — it becomes a column in the table",
                 onClick: () => onPublish(plan),
               },
-              { label: "Choose bundles & extras", icon: "programmes", onClick: () => onBundle(plan) },
+              {
+                label: "Choose bundles & extras",
+                icon: "programmes",
+                tip: "Pick which bundles and benefits this plan opens",
+                onClick: () => onBundle(plan),
+              },
               {
                 label: plan.bestSeller ? "Remove best seller" : "Mark as best seller",
                 icon: "heart",
+                tip: plan.bestSeller
+                  ? "Stop highlighting this plan to members"
+                  : "Highlight this plan to members — only one plan can be the best seller",
                 onClick: () => onBestSeller(plan.id),
               },
               null,
-              { label: "Remove plan", icon: "trash", danger: true, onClick: () => onDelete(plan) },
+              {
+                label: "Remove plan",
+                icon: "trash",
+                danger: true,
+                tip: "Delete the plan — members already on it keep what they paid for",
+                onClick: () => onDelete(plan),
+              },
             ]}
           />
         </div>

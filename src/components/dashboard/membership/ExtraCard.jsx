@@ -24,15 +24,30 @@ export default function ExtraCard({ extra, usedBy, onEdit, onPublish, onDelete }
         </div>
         <KebabMenu
           size="sm"
+          tip="Edit, publish or delete this benefit"
           items={[
-            { label: "Rename", icon: "link", onClick: () => onEdit(extra) },
+            {
+              label: "Edit benefit",
+              icon: "link",
+              tip: "Change its name and detail line",
+              onClick: () => onEdit(extra),
+            },
             {
               label: isLiveItem(extra) ? "Unpublish" : "Publish",
               icon: isLiveItem(extra) ? "eyeOff" : "eye",
+              tip: isLiveItem(extra)
+                ? "Hide it from members — plans that include it stop showing it"
+                : "Make it live — plans that include it start showing it",
               onClick: () => onPublish(extra),
             },
             null,
-            { label: "Delete", icon: "trash", danger: true, onClick: () => onDelete(extra) },
+            {
+              label: "Delete",
+              icon: "trash",
+              danger: true,
+              tip: "Delete the benefit from every plan that has it",
+              onClick: () => onDelete(extra),
+            },
           ]}
         />
       </div>

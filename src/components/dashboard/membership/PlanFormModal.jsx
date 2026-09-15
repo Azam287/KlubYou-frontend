@@ -51,6 +51,16 @@ export default function PlanFormModal({
   const off = discountPercent(preview);
   const listTooLow = list > 0 && list < amount;
   const detailsDone = !!form.name.trim() && months >= 1 && amount > 0 && !listTooLow;
+  // What the Next button is waiting for, first thing first.
+  const detailsMissing = !form.name.trim()
+    ? "Give the plan a name first"
+    : months < 1
+      ? "Set a length of at least one month"
+      : amount <= 0
+        ? "Set a price above £0"
+        : listTooLow
+          ? "The full price can't be lower than the price"
+          : "";
 
   const everything = planIsEverything(form);
   // Only published things can be put in a plan.
@@ -85,21 +95,41 @@ export default function PlanFormModal({
       footer={
         step === 1 ? (
           <>
-            <button className="btn btn-ghost" onClick={onClose}>
+            <button className="btn btn-ghost" onClick={onClose} data-tip="Close without saving">
               Cancel
             </button>
-            <button className="btn btn-coral" disabled={!detailsDone} onClick={() => setStep(2)}>
-              Choose what's in it
-            </button>
+            <span
+              className="tip-wrap"
+              data-tip={detailsMissing || "Next: pick the bundles and benefits it opens"}
+            >
+              <button className="btn btn-coral" disabled={!detailsDone} onClick={() => setStep(2)}>
+                Choose what's in it
+              </button>
+            </span>
           </>
         ) : (
           <>
-            <button className="btn btn-ghost" onClick={() => setStep(1)}>
+            <button
+              className="btn btn-ghost"
+              onClick={() => setStep(1)}
+              data-tip="Back to name, length and price — your picks are kept"
+            >
               Back
             </button>
-            <button className="btn btn-coral" disabled={hollow} onClick={save}>
-              {editing ? "Save plan" : "Add plan"}
-            </button>
+            <span
+              className="tip-wrap"
+              data-tip={
+                hollow
+                  ? "Pick a bundle or a benefit — a plan can't open nothing"
+                  : editing
+                    ? "Save the changes to this plan"
+                    : "Create the plan as a draft — publish it from its card"
+              }
+            >
+              <button className="btn btn-coral" disabled={hollow} onClick={save}>
+                {editing ? "Save plan" : "Add plan"}
+              </button>
+            </span>
           </>
         )
       }
@@ -198,12 +228,14 @@ export default function PlanFormModal({
             <div className="segbtns">
               <button
                 className={`seg${everything ? " on" : ""}`}
+                data-tip="Every published bundle and benefit, including ones you add later — nothing can be left out"
                 onClick={() => set({ scope: "all" })}
               >
                 Everything
               </button>
               <button
                 className={`seg${everything ? "" : " on"}`}
+                data-tip="Pick exactly which bundles and benefits this plan opens"
                 onClick={() => set({ scope: "picked" })}
               >
                 Choose bundles

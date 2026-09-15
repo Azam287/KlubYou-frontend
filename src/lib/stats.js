@@ -67,15 +67,6 @@ export function programmeBuyers(members, programmeId) {
   return members.filter((m) => m.plan === "programme" && m.programmeId === programmeId).length;
 }
 
-export function planMixOf(members) {
-  const s = memberStats(members);
-  return [
-    { key: "studio", label: "Studio subscriptions", value: s.studio, color: "#F15B41" },
-    { key: "programmes", label: "Single programmes", value: s.programme, color: "#221A38" },
-    { key: "leads", label: "Leads", value: s.leads, color: "#C9BFE0" },
-  ];
-}
-
 /* ---------- payments ---------- */
 
 export function paymentTotals(payments, now = new Date()) {

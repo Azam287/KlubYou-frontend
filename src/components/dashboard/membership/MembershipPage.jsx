@@ -31,10 +31,18 @@ import {
 } from "../../../lib/membership";
 
 const TABS = [
-  { key: "plans", label: "Plans" },
-  { key: "bundles", label: "Bundles" },
-  { key: "extras", label: "Extra benefits" },
+  { key: "plans", label: "Plans", tip: "What people buy, and what each plan opens" },
+  { key: "bundles", label: "Bundles", tip: "Named sets of your programmes and lessons that plans open" },
+  { key: "extras", label: "Extra benefits", tip: "Perks that come with a plan but aren't content" },
 ];
+
+// What the header button does on each tab. Every new thing starts as a draft,
+// which is the part people don't expect.
+const ADD_TIP = {
+  plans: "Create a plan — a name, length and price. It starts as a draft.",
+  bundles: "Group programmes and lessons into a set plans can open. It starts as a draft.",
+  extras: "Add a perk with no content behind it, like a monthly check-in. It starts as a draft.",
+};
 
 // The one subscription that unlocks everything, and what "everything" means.
 //
@@ -124,7 +132,7 @@ export default function MembershipPage() {
     }[tab];
     const label = { plans: "New plan", bundles: "New bundle", extras: "New benefit" }[tab];
     return (
-      <button className="btn btn-coral" onClick={open}>
+      <button className="btn btn-coral" onClick={open} data-tip={ADD_TIP[tab]} data-tip-side="bottom">
         <Icon name="plus" size={16} strokeWidth={2.2} /> {label}
       </button>
     );
@@ -154,6 +162,7 @@ export default function MembershipPage() {
           <button
             key={t.key}
             className={`tab${tab === t.key ? " on" : ""}`}
+            data-tip={t.tip}
             onClick={() => setTab(t.key)}
           >
             {t.label}
@@ -240,7 +249,8 @@ export default function MembershipPage() {
                 <button
                   className={`viewbtn${planView === "table" ? " on" : ""}`}
                   aria-pressed={planView === "table"}
-                  title="Table — what each plan opens"
+                  aria-label="Table view"
+                  data-tip="Table view — tick what each plan opens"
                   onClick={() => setPlanView("table")}
                 >
                   <Icon name="table" size={16} strokeWidth={1.9} />
@@ -248,14 +258,19 @@ export default function MembershipPage() {
                 <button
                   className={`viewbtn${planView === "cards" ? " on" : ""}`}
                   aria-pressed={planView === "cards"}
-                  title="Cards — the plans as products"
+                  aria-label="Card view"
+                  data-tip="Card view — plans as products, where you publish them and set the best seller"
                   onClick={() => setPlanView("cards")}
                 >
                   <Icon name="list" size={16} strokeWidth={1.9} />
                 </button>
               </div>
 
-              <button className="btn btn-ghost btn-sm" onClick={() => setMemberView(true)}>
+              <button
+                className="btn btn-ghost btn-sm"
+                data-tip="See the plans and comparison exactly as members will — drafts left out"
+                onClick={() => setMemberView(true)}
+              >
                 <Icon name="page" size={14} strokeWidth={2} /> Preview as member
               </button>
             </div>
@@ -495,6 +510,8 @@ export default function MembershipPage() {
         message={`Remove "${planDelete ? planName(planDelete) : ""}"?`}
         detail="Members already on it keep what they paid for. Nobody new can choose it."
         confirmLabel="Remove plan"
+        cancelTip="Keep the plan"
+        confirmTip="Delete the plan — nobody new can choose it"
         onConfirm={() => removeStudioPlan(planDelete.id)}
         onClose={() => setPlanDelete(null)}
       />
@@ -509,6 +526,8 @@ export default function MembershipPage() {
             : "No plan uses it. The content itself is untouched."
         }
         confirmLabel="Delete bundle"
+        cancelTip="Keep the bundle"
+        confirmTip="Delete the bundle — its programmes and lessons are untouched"
         onConfirm={() => deleteBundle(bundleDelete.id)}
         onClose={() => setBundleDelete(null)}
       />
@@ -519,6 +538,8 @@ export default function MembershipPage() {
         message={`Remove "${featureDelete?.title}" from what members get?`}
         detail="It disappears from every plan and from your public page."
         confirmLabel="Remove it"
+        cancelTip="Keep the benefit"
+        confirmTip="Delete the benefit from every plan that has it"
         onConfirm={() => deleteMembershipFeature(featureDelete.id)}
         onClose={() => setFeatureDelete(null)}
       />

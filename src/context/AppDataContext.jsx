@@ -1,18 +1,20 @@
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import {
   coverSwatches,
-  initialActivity,
   initialEverydayLessons,
   initialBundles,
   initialMembershipFeatures,
   initialMembers,
-  initialPagePlans,
   initialPayments,
   initialProgrammes,
   initialStudio,
   initialStudioPlans,
 } from "../data/mockData";
 import { nextMembershipOrder } from "../lib/membership";
+import { giftedRenewal, voucherCode } from "../lib/members";
+import { renewalAfterPayment } from "../lib/payments";
+import { formatDayMonth } from "../lib/datetime";
+import { MAX_LINKS, moveItem, pageSnapshot, sectionOrderOf, themeOf } from "../lib/page";
 import { useToast } from "./ToastContext";
 
 const AppDataContext = createContext(null);
@@ -48,29 +50,80 @@ export function AppDataProvider({ children }) {
   const { showToast } = useToast();
 
   const [studio, setStudio] = useState(initialStudio);
-  const [coverGradient, setCoverGradientState] = useState(initialStudio.coverGradient);
+  // What visitors see. My page edits `studio` as a draft; this only moves when
+  // the creator publishes (lib/page.js → pageSnapshot).
+  const [publishedPage, setPublishedPage] = useState(() => pageSnapshot(initialStudio));
   const [studioPlans, setStudioPlans] = useState(initialStudioPlans);
   const [membershipFeatures, setMembershipFeatures] = useState(initialMembershipFeatures);
   const [bundles, setBundles] = useState(initialBundles);
-  const [pagePlans, setPagePlans] = useState(initialPagePlans);
   const [members, setMembers] = useState(initialMembers);
   const [programmes, setProgrammes] = useState(initialProgrammes);
-  const [payments] = useState(initialPayments);
+  const [payments, setPayments] = useState(initialPayments);
   const [everydayLessons, setEverydayLessons] = useState(initialEverydayLessons);
-  const [activity] = useState(initialActivity);
 
   /* ---------- profile / page ---------- */
   const updateStudio = useCallback((patch) => {
     setStudio((s) => ({ ...s, ...patch }));
   }, []);
 
-  const setCoverGradient = useCallback((gradient) => {
-    setCoverGradientState(gradient);
+  // The public page's links. Rows are kept while half-typed; the page itself
+  // shows only the ones that look like a link (lib/page.js).
+  const addPageLink = useCallback(() => {
+    setStudio((s) =>
+      (s.links || []).length >= MAX_LINKS
+        ? s
+        : { ...s, links: [...(s.links || []), { id: nextId("link"), label: "", url: "" }] }
+    );
   }, []);
 
-  const togglePagePlan = useCallback((key) => {
-    setPagePlans((list) => list.map((p) => (p.key === key ? { ...p, on: !p.on } : p)));
+  const updatePageLink = useCallback((linkId, patch) => {
+    setStudio((s) => ({
+      ...s,
+      links: (s.links || []).map((l) => (l.id === linkId ? { ...l, ...patch } : l)),
+    }));
   }, []);
+
+  const removePageLink = useCallback((linkId) => {
+    setStudio((s) => ({ ...s, links: (s.links || []).filter((l) => l.id !== linkId) }));
+  }, []);
+
+  const publishPage = useCallback(() => {
+    setPublishedPage(pageSnapshot(studio));
+    showToast("Page published — visitors now see your changes");
+  }, [studio, showToast]);
+
+  // Which published programmes the page shows. Stored as the hidden ones, so
+  // anything published later shows up without being ticked.
+  const setProgrammeOnPage = useCallback((programmeId, shown) => {
+    setStudio((s) => {
+      const hidden = (s.hiddenProgrammes || []).filter((id) => id !== programmeId);
+      return { ...s, hiddenProgrammes: shown ? hidden : [...hidden, programmeId] };
+    });
+  }, []);
+
+  // Where a section sits on the page. One move at a time, by drag or by key.
+  const movePageSection = useCallback((key, to) => {
+    setStudio((s) => ({ ...s, sectionOrder: moveItem(sectionOrderOf(s), key, to) }));
+  }, []);
+
+  // Switch a whole section on or off. Its content is kept either way.
+  const setSectionHidden = useCallback((key, hidden) => {
+    setStudio((s) => {
+      const rest = (s.hiddenSections || []).filter((k) => k !== key);
+      return { ...s, hiddenSections: hidden ? [...rest, key] : rest };
+    });
+  }, []);
+
+  const showAllProgrammes = useCallback(() => {
+    setStudio((s) => ({ ...s, hiddenProgrammes: [] }));
+  }, []);
+
+  // Background and text colour. Everything else on the page is mixed from
+  // these two, so a page can't end up with a third colour nobody chose.
+  const updatePageTheme = useCallback((patch) => {
+    setStudio((s) => ({ ...s, theme: { ...themeOf(s), ...patch } }));
+  }, []);
+
 
   /* ---------- studio subscription (tier 1: unlocks everything) ---------- */
   const addStudioPlan = useCallback(
@@ -228,41 +281,79 @@ export function AppDataProvider({ children }) {
 
 
   /* ---------- members ---------- */
-  const memberAction = useCallback(
-    (type, memberId) => {
-      const member = members.find((m) => m.id === memberId);
-      const name = member ? member.name : "";
-      const messages = {
-        gift: `Gave 7 bonus days to ${name}`,
-        email: `Opening a message to ${name}…`,
-        voucher: `Voucher sent to ${name}`,
-        stop: `${name}'s subscription was stopped`,
-        receipt: `Receipt sent to ${name}`,
-      };
-      if (type === "stop") {
-        setMembers((list) =>
-          list.map((m) => (m.id === memberId ? { ...m, status: "inactive", expiring: false } : m))
-        );
+  // A pending payment that has now gone through. It becomes paid today, and if
+  // it was the member's renewal, their renewal date moves on by the period it
+  // paid for — so "Payment due" clears on the members page with nothing else to
+  // update (lib/payments.js decides the new date).
+  const markPaymentPaid = useCallback(
+    (paymentId) => {
+      const payment = payments.find((p) => p.id === paymentId);
+      if (!payment || payment.status !== "pending") return;
+      const target = members.find((m) => m.id === payment.memberId);
+      const ctx = { plans: studioPlans, programmes };
+      const renewsAt = target ? renewalAfterPayment(target, payment, ctx) : null;
+      setPayments((list) =>
+        list.map((p) => (p.id === paymentId ? { ...p, status: "paid", paidAt: new Date().toISOString() } : p))
+      );
+      if (renewsAt) {
+        setMembers((list) => list.map((m) => (m.id === target.id ? { ...m, renewsAt } : m)));
       }
-      showToast(messages[type] || "Done");
+      showToast(
+        renewsAt
+          ? `Marked paid — ${target.name} now renews ${formatDayMonth(renewsAt)}`
+          : `Marked paid${target ? ` for ${target.name}` : ""}`
+      );
+    },
+    [payments, members, studioPlans, programmes, showToast]
+  );
+
+  // Push a member's renewal back by some days — a real change to their date,
+  // not just a message saying so. lib/members.js decides who can be gifted.
+  const giftMemberDays = useCallback(
+    (memberId, days) => {
+      const target = members.find((m) => m.id === memberId);
+      if (!target?.renewsAt) return;
+      const renewsAt = giftedRenewal(target, days);
+      setMembers((list) => list.map((m) => (m.id === memberId ? { ...m, renewsAt } : m)));
+      showToast(`Gave ${target.name} ${days} extra days`);
     },
     [members, showToast]
   );
 
-  // Payments/receipts reference a member by name rather than id (that's how
-  // the payments ledger is shaped), so offer a name-based variant too.
-  const memberActionByName = useCallback(
-    (type, name) => {
-      const messages = {
-        gift: `Gave 7 bonus days to ${name}`,
-        email: `Opening a message to ${name}…`,
-        voucher: `Voucher sent to ${name}`,
-        stop: `${name}'s subscription was stopped`,
-        receipt: `Receipt sent to ${name}`,
-      };
-      showToast(messages[type] || "Done");
+  // Stop or resume renewal. Stopping doesn't cut access off: it runs to the end
+  // of the paid time and then ends, which is what a member has paid for.
+  const setMemberAutoRenew = useCallback(
+    (memberId, on) => {
+      const target = members.find((m) => m.id === memberId);
+      setMembers((list) => list.map((m) => (m.id === memberId ? { ...m, autoRenew: on } : m)));
+      showToast(
+        on
+          ? `${target?.name || "Their"} subscription will renew again`
+          : `${target?.name || "Their"} subscription won't renew — access runs to the end of the paid time`
+      );
     },
-    [showToast]
+    [members, showToast]
+  );
+
+  // Record a voucher against a member. Returns it, so the caller can put the
+  // code in the email it opens.
+  const addMemberVoucher = useCallback(
+    (memberId, percent) => {
+      const target = members.find((m) => m.id === memberId);
+      if (!target) return null;
+      const voucher = {
+        id: nextId("voucher"),
+        code: voucherCode(target, percent),
+        percent,
+        createdAt: new Date().toISOString(),
+      };
+      setMembers((list) =>
+        list.map((m) => (m.id === memberId ? { ...m, vouchers: [...(m.vouchers || []), voucher] } : m))
+      );
+      showToast(`Voucher ${voucher.code} created for ${target.name}`);
+      return voucher;
+    },
+    [members, showToast]
   );
 
   /* ---------- programmes ---------- */
@@ -336,6 +427,11 @@ export function AppDataProvider({ children }) {
   const deleteProgramme = useCallback(
     (programmeId) => {
       setProgrammes((list) => list.filter((p) => p.id !== programmeId));
+      // Nor can it go on being hidden from a page it no longer exists to be on.
+      setStudio((s) => ({
+        ...s,
+        hiddenProgrammes: (s.hiddenProgrammes || []).filter((id) => id !== programmeId),
+      }));
       showToast("Programme deleted");
     },
     [showToast]
@@ -768,8 +864,16 @@ export function AppDataProvider({ children }) {
     () => ({
       studio,
       updateStudio,
-      coverGradient,
-      setCoverGradient,
+      addPageLink,
+      updatePageLink,
+      removePageLink,
+      updatePageTheme,
+      setProgrammeOnPage,
+      showAllProgrammes,
+      movePageSection,
+      setSectionHidden,
+      publishedPage,
+      publishPage,
       coverSwatches,
       studioPlans,
       addStudioPlan,
@@ -787,12 +891,10 @@ export function AppDataProvider({ children }) {
       addMembershipFeature,
       updateMembershipFeature,
       deleteMembershipFeature,
-      pagePlans,
-      togglePagePlan,
-      activity,
       members,
-      memberAction,
-      memberActionByName,
+      giftMemberDays,
+      setMemberAutoRenew,
+      addMemberVoucher,
       programmes,
       addProgramme,
       updateProgramme,
@@ -818,6 +920,7 @@ export function AppDataProvider({ children }) {
       moveVideo,
       moveSection,
       payments,
+      markPaymentPaid,
       everydayLessons,
       addEverydayLesson,
       updateEverydayLesson,
@@ -827,8 +930,16 @@ export function AppDataProvider({ children }) {
     [
       studio,
       updateStudio,
-      coverGradient,
-      setCoverGradient,
+      addPageLink,
+      updatePageLink,
+      removePageLink,
+      updatePageTheme,
+      setProgrammeOnPage,
+      showAllProgrammes,
+      movePageSection,
+      setSectionHidden,
+      publishedPage,
+      publishPage,
       studioPlans,
       addStudioPlan,
       updateStudioPlan,
@@ -845,12 +956,10 @@ export function AppDataProvider({ children }) {
       addMembershipFeature,
       updateMembershipFeature,
       deleteMembershipFeature,
-      pagePlans,
-      togglePagePlan,
-      activity,
       members,
-      memberAction,
-      memberActionByName,
+      giftMemberDays,
+      setMemberAutoRenew,
+      addMemberVoucher,
       programmes,
       addProgramme,
       updateProgramme,
@@ -876,6 +985,7 @@ export function AppDataProvider({ children }) {
       moveVideo,
       moveSection,
       payments,
+      markPaymentPaid,
       everydayLessons,
       addEverydayLesson,
       updateEverydayLesson,

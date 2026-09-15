@@ -1,234 +1,297 @@
-import { useState } from "react";
+import { Fragment } from "react";
 import Icon from "../../common/Icon";
-import { money } from "../../../lib/stats";
+import { PROGRAMME_TYPES, contentSummary, hasIntro } from "../../../lib/programme";
+import { planPrice } from "../../../lib/membership";
+import MembershipComparison from "../membership/MembershipComparison";
 import {
-  PROGRAMME_TYPES,
-  contentSummary,
-  hasIntro,
-  isPublished,
-  leadOffer,
-  offersOf,
-} from "../../../lib/programme";
-import { patternLabel, repeats, timeLabel } from "../../../lib/everyday";
-import {
-  comparisonRows,
-  publishedOnly,
-  contentSummaryOf,
-  planContent,
-  planName,
-  discountPercent,
-  hasDiscount,
-  listPrice,
-  planLabel,
-  planPrice,
-  sortedPlans,
-} from "../../../lib/membership";
+  buttonLinks,
+  cheapestPlan,
+  isEmailLink,
+  videoEmbedOf,
+  linkLabel,
+  looksLikeUrl,
+  onAccent,
+  platformOf,
+  programmeAction,
+  programmePriceLabel,
+  visibleSections,
+  socialLinks,
+  themeOf,
+} from "../../../lib/page";
 
-// A drop-in isn't a modelled offer kind yet, so its price is illustrative —
-// everything else here reads straight from the studio/programme data.
-const DROPIN_PRICE = "£8";
-
-// The public page mirrors the two access tiers: one studio subscription that
-// unlocks everything, then each programme sold on its own underneath.
+// The public page as a follower meets it — on a phone from a link in bio, or
+// on a computer (`device="web"`). One page, two frames: the web view widens
+// the column, lays memberships and programmes out in a grid, and moves the join
+// button from the bottom of the screen to a bar across the top.
+//
+// It reads like the creator pages people already know — a cover and a ringed
+// avatar, @handle, social icons, big tappable links, a store underneath and a
+// join button that stays in reach. Below the header, sections come in the
+// order the creator set, minus any they've hidden.
+//
+// Nothing here is clickable — it's a preview inside the dashboard — so the
+// calls to action are drawn, not wired.
+// `programmes` is what the page shows; `catalogue` is every published
+// programme. The membership comparison reads the catalogue — hiding a
+// programme from the page mustn't change what a membership says it includes.
 export default function PagePreview({
   studio,
-  coverGradient,
-  pagePlans,
-  studioPlans,
+  plans,
   programmes,
-  everydayLessons,
-  membershipFeatures,
+  catalogue = programmes,
   bundles,
-  memberCount,
+  lessons,
+  features = [],
+  device = "phone",
 }) {
-  const [selectedPlanId, setSelectedPlanId] = useState(
-    sortedPlans(publishedOnly(studioPlans))[0]?.id
+  const web = device === "web";
+  const theme = themeOf(studio);
+  const socials = socialLinks(studio.links);
+  const buttons = buttonLinks(studio.links);
+  const video = looksLikeUrl(studio.introVideo) ? studio.introVideo : "";
+  // YouTube and Vimeo play right on the page; any other link gets a card.
+  const embed = videoEmbedOf(video);
+  const initial = (studio.name || "").trim().charAt(0).toUpperCase() || "?";
+  const entry = cheapestPlan(plans);
+  // Hidden sections are left out entirely — and with memberships hidden, the
+  // join button goes too, since there'd be nothing on the page to join.
+  const order = visibleSections(studio);
+  const joinable = entry && order.includes("memberships");
+  const avatar = studio.avatarImage ? { backgroundImage: `url(${studio.avatarImage})` } : undefined;
+  const cover = studio.coverImage || "https://picsum.photos/400/150"
+    ? { backgroundImage: `url(${studio.coverImage || "https://picsum.photos/400/150"})` }
+    : undefined;
+
+  // The sections under the header, in the order the creator set. Each is
+  // written as if it stood alone; empty ones render nothing.
+  const sections = {
+    about: studio.about.trim() && <p className="pg-about">{studio.about}</p>,
+    video: embed ? (
+      <div className="pg-video player">
+        <iframe
+          src={embed.src}
+          title={`Intro video on ${embed.provider}`}
+          loading="lazy"
+          allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+          allowFullScreen
+          referrerPolicy="strict-origin-when-cross-origin"
+        />
+      </div>
+    ) : video && (
+      <div className="pg-video" role="img" aria-label="Intro video">
+        <span className="pg-play">
+          <Icon name="play" size={20} strokeWidth={2.2} />
+        </span>
+        <span className="pg-video-lbl">
+          <b>Watch my intro</b>
+          <small>{platformOf(video)?.name || "Video"}</small>
+        </span>
+      </div>
+    ),
+    links: (socials.length > 0 || buttons.length > 0) && (
+      <nav className="pg-links" aria-label="Links">
+        {socials.length > 0 && (
+          <div className="pg-socials">
+            {socials.map((l) => {
+              const p = platformOf(l.url);
+              return (
+                <span className="pg-social" key={l.id} role="img" aria-label={p.name}>
+                  <Icon name={p.key} size={20} strokeWidth={1.9} />
+                </span>
+              );
+            })}
+          </div>
+        )}
+        {buttons.map((l) => {
+          const p = platformOf(l.url);
+          return (
+            <span className="pg-link" key={l.id}>
+              <span className="pg-link-ic">
+                <Icon name={p ? p.key : isEmailLink(l.url) ? "mail" : "globe"} size={17} strokeWidth={1.9} />
+              </span>
+              <span className="pg-link-t">{linkLabel(l)}</span>
+              <Icon name="arrowUpRight" size={15} strokeWidth={2} />
+            </span>
+          );
+        })}
+      </nav>
+    ),
+    memberships: plans.length > 0 && (
+      <section className="pg-sec">
+        <h3>Join the membership</h3>
+        {/* The same cards and table members choose from in the membership
+            preview, in this page's colours. */}
+        <MembershipComparison
+          plans={plans}
+          bundles={bundles}
+          programmes={catalogue}
+          lessons={lessons}
+          features={features}
+          picture
+        />
+      </section>
+    ),
+    programmes: programmes.length > 0 && (
+      <section className="pg-sec">
+        <h3>Programmes</h3>
+        {/* A row you swipe, like a creator's shop — one programme at a
+            time, with the next peeking in so it's obvious there's more. */}
+        <div className={`pg-rail${programmes.length === 1 ? " single" : ""}`}>
+          {programmes.map((p) => {
+            const type = PROGRAMME_TYPES[p.type] || PROGRAMME_TYPES.live;
+            return (
+              <div className="pg-product" key={p.id}>
+                <div
+                  className="pg-thumb"
+                  style={p.thumbGradient ? { background: p.thumbGradient } : undefined}
+                >
+                  <span className="pg-badge">{type.label}</span>
+                  {hasIntro(p) && (
+                    <span className="pg-thumb-play" role="img" aria-label="Has an intro video">
+                      <Icon name="play" size={14} strokeWidth={2.4} />
+                    </span>
+                  )}
+                </div>
+                <div className="pg-product-b">
+                  <b>{p.name}</b>
+                  <small>{contentSummary(p)}</small>
+                  <div className="pg-product-f">
+                    <strong>{programmePriceLabel(p)}</strong>
+                    {programmeAction(p, { canJoin: joinable }) && (
+                      <span className="pg-btn sm">{programmeAction(p, { canJoin: joinable })}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    ),
+  };
+
+  const page = (
+    <div
+      className={`pg ${web ? "web" : "mobile"}`}
+      style={{
+        "--pg-bg": theme.background,
+        "--pg-text": theme.text,
+        "--pg-accent": theme.accent,
+        "--pg-on-accent": onAccent(theme.accent),
+      }}
+    >
+      {/* A phone's status bar. The page scrolls beneath it, the way it does on
+          a real phone, instead of sliding up past the camera cut-out. */}
+      {!web && (
+        <div className="phone-status" aria-hidden="true">
+          <span>9:41</span>
+          <span className="phone-status-r">
+            <svg width="17" height="11" viewBox="0 0 17 11">
+              <rect x="0" y="7" width="3" height="4" rx="1" />
+              <rect x="4.5" y="5" width="3" height="6" rx="1" />
+              <rect x="9" y="2.5" width="3" height="8.5" rx="1" />
+              <rect x="13.5" y="0" width="3" height="11" rx="1" />
+            </svg>
+            <svg width="25" height="12" viewBox="0 0 25 12">
+              <rect x="0.5" y="0.5" width="21" height="11" rx="3" fill="none" stroke="currentColor" opacity="0.45" />
+              <rect x="2" y="2" width="15" height="8" rx="1.8" />
+              <rect x="22.5" y="4" width="1.8" height="4" rx="0.9" opacity="0.45" />
+            </svg>
+          </span>
+        </div>
+      )}
+
+      {/* On a computer the join button lives in a bar across the top,
+          where a site's main action is expected. */}
+      {web && (
+        <div className="pg-topbar">
+          <span className="pg-topbar-id">
+            <span className="pg-mini-av" aria-hidden="true" style={avatar}>
+              {avatar ? "" : initial}
+            </span>
+            <b>{studio.name.trim() || "Your studio name"}</b>
+          </span>
+          <span className="pg-topbar-r">
+            <span className="pg-round" aria-hidden="true">
+              <Icon name="share" size={15} strokeWidth={2} />
+            </span>
+            {joinable && <span className="pg-btn sm">Join from {planPrice(entry)}</span>}
+          </span>
+        </div>
+      )}
+
+      <div className={`pg-cover${studio.coverImage ? " img" : ""}`} style={cover}>
+        {!web && (
+          <span className="pg-round" aria-hidden="true">
+            <Icon name="share" size={15} strokeWidth={2} />
+          </span>
+        )}
+      </div>
+
+      <div className="pg-col">
+        <header className="pg-head">
+          <div className="pg-av" aria-hidden="true">
+            <span className={avatar ? "img" : undefined} style={avatar}>
+              {avatar ? "" : initial}
+            </span>
+          </div>
+          {/* Empty fields show as placeholders, so a blank page still
+              shows where everything goes. */}
+          <h2 className={`pg-name${studio.name.trim() ? "" : " pg-ph"}`}>
+            {studio.name.trim() || "Your studio name"}
+          </h2>
+          <p className="pg-handle">@{studio.handle}</p>
+          <p className={`pg-tag${studio.tagline.trim() ? "" : " pg-ph"}`}>
+            {studio.tagline.trim() || "Your tagline"}
+          </p>
+        </header>
+
+        {order.map((key) => (
+          <Fragment key={key}>{sections[key]}</Fragment>
+        ))}
+
+        <footer className="pg-foot">
+          Made with <b>KlubYou</b>
+        </footer>
+      </div>
+
+      {/* Pinned to the bottom of a phone screen, the way creator pages
+          keep the one thing they want you to do within thumb's reach. */}
+      {!web && joinable && (
+        <div className="pg-sticky">
+          <span className="pg-btn">Join from {planPrice(entry)}</span>
+        </div>
+      )}
+    </div>
   );
-  const isOn = (key) => pagePlans.find((p) => p.key === key)?.on;
-  // Draft programmes never reach the public page, however they're priced —
-  // previously a single offer was enough to publish an empty programme.
-  const sellable = (programmes || []).filter((p) => isPublished(p) && offersOf(p).length > 0);
-  // What a drop-in actually buys a seat at: the lessons that repeat. A paused
-  // one isn't running, and a one-off is gone before anyone reads the page.
-  const running = (everydayLessons || []).filter(
-    (l) => l.active !== false && l.venueUrl && repeats(l)
-  );
-  // What the subscription actually gets you, named rather than implied — and
-  // taken from the selected plan's bundle, since "every programme" stopped
-  // being true once shorter plans could carry fewer.
-  // Only from what's on sale, and falling back to the first of those: the id is
-  // held from the first render, so unpublishing the chosen plan left the public
-  // page describing a plan nobody can buy.
-  const livePlans = sortedPlans(publishedOnly(studioPlans));
-  const selectedPlan = livePlans.find((p) => p.id === selectedPlanId) || livePlans[0] || null;
-  const includedLine =
-    [
-      selectedPlan ? contentSummaryOf(selectedPlan, bundles, programmes, everydayLessons) : null,
-      running.length ? `${running.length} weekly class${running.length === 1 ? "" : "es"}` : null,
-    ]
-      .filter(Boolean)
-      .join(" and ") || "Everything you publish";
-  const includedText = `${includedLine} — one price, cancel anytime.`;
+
+  if (web) {
+    return (
+      <div className="browser">
+        <div className="browser-bar">
+          <div className="dots">
+            <i />
+            <i />
+            <i />
+          </div>
+          <div className="browser-url">
+            <Icon name="lock" size={12} strokeWidth={2} />
+            klubyou.co/{studio.handle}
+          </div>
+        </div>
+        <div className="browser-view">{page}</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="browser">
-      <div className="browser-bar">
-        <div className="dots">
-          <i />
-          <i />
-          <i />
-        </div>
-        <div className="browser-url">
-          <Icon name="lock" size={12} strokeWidth={2} />
-          klubyou.co/{studio.handle}
-        </div>
+    <div className="phone-stage">
+      <div className="phone">
+        <div className="phone-screen">{page}</div>
       </div>
-      <div className="browser-view">
-        <div className="pubpage">
-          <div className="pp-cover" style={{ background: coverGradient }} />
-          <div className="pp-head">
-            <div className="pp-av">
-              <Icon name="person" size={34} strokeWidth={1.7} />
-            </div>
-            <h2 className="pp-name">{studio.name}</h2>
-            <p className="pp-tag">{studio.tagline}</p>
-            <div className="pp-stats">
-              <span>
-                <b>{memberCount}</b> members
-              </span>
-              <span>
-                <b>{studio.classesPerWeek}</b> classes / week
-              </span>
-              <span>
-                <b>{studio.rating}</b> rating
-              </span>
-            </div>
-          </div>
-          <div className="pp-section first">
-            <p className="pp-about">{studio.about}</p>
-          </div>
-          <div className="pp-section">
-            <h3 className="pp-h">Choose your plan</h3>
-            <div className="pp-plans">
-              {isOn("studio") && livePlans.length > 0 && (
-                <div className="pp-plan feat">
-                  <div className="pt">
-                    <h5>{selectedPlan ? planName(selectedPlan) : "Studio subscription"}</h5>
-                  </div>
-                  {/* Named rather than implied: "everything you publish" left a
-                      visitor counting for themselves. */}
-                  <p className="pdesc">
-                    {selectedPlan?.description || includedText}
-                  </p>
-                  {/* What the chosen length actually unlocks, straight from the
-                      membership table — not a second list to keep in step. */}
-                  <div className="pp-opts">
-                    {livePlans.map((p) => (
-                      <button
-                        key={p.id}
-                        className={`pp-opt${selectedPlan?.id === p.id ? " on" : ""}`}
-                        onClick={() => setSelectedPlanId(p.id)}
-                      >
-                        {planLabel(p)} · {planPrice(p)}
-                        {hasDiscount(p) && <s>{money(listPrice(p))}</s>}
-                      </button>
-                    ))}
-                  </div>
-                  {selectedPlan && (
-                    <ul className="pp-inc">
-                      {/* The programmes this length actually bundles, named —
-                          "every programme" wasn't true of the shorter plans. */}
-                      {planContent(selectedPlan, bundles, programmes, everydayLessons).programmes.map((prog) => (
-                        <li key={prog.id}>
-                          <Icon name="check" size={12} strokeWidth={3} /> {prog.name}
-                        </li>
-                      ))}
-                      {planContent(selectedPlan, bundles, programmes, everydayLessons).lessons
-                        .slice(0, 3)
-                        .map((l) => (
-                          <li key={l.id}>
-                            <Icon name="check" size={12} strokeWidth={3} /> {l.title}
-                          </li>
-                        ))}
-                      {/* The same rows the membership table shows, so anything
-                          hidden there is hidden here too. */}
-                      {comparisonRows({
-                        plans: publishedOnly(studioPlans),
-                        bundles,
-                        programmes,
-                        lessons: everydayLessons,
-                        features: membershipFeatures,
-                      })
-                        .filter((r) => r.kind === "extra" && r.plans.includes(selectedPlan.id))
-                        .slice(0, 3)
-                        .map((r) => (
-                          <li key={r.id}>
-                            <Icon name="check" size={12} strokeWidth={3} /> {r.title}
-                          </li>
-                        ))}
-                    </ul>
-                  )}
-                  <button className="pp-btn">
-                    Subscribe
-                    {selectedPlan && hasDiscount(selectedPlan)
-                      ? ` — save ${discountPercent(selectedPlan)}%`
-                      : ""}
-                  </button>
-                </div>
-              )}
-
-              {isOn("programmes") &&
-                sellable.map((p) => {
-                  const lead = leadOffer(p);
-                  const meta = PROGRAMME_TYPES[p.type] || PROGRAMME_TYPES.live;
-                  return (
-                    <div className="pp-plan" key={p.id}>
-                      <div className="pt">
-                        <h5>{p.name}</h5>
-                        <span className="price">{lead?.price}</span>
-                      </div>
-                      <p className="pdesc">
-                        {meta.label} · {contentSummary(p)}
-                        {p.pricing?.certificate ? " · certificate included" : ""}
-                      </p>
-                      {/* The trailer is the only thing a visitor can watch
-                          before paying, so the page offers it by name. */}
-                      {hasIntro(p) && (
-                        <button className="pp-watch">
-                          <Icon name="video" size={13} strokeWidth={2} /> Watch the intro
-                        </button>
-                      )}
-                      <button className="pp-btn">
-                        {lead?.kind === "subscription" ? "Subscribe" : "Buy programme"}
-                      </button>
-                    </div>
-                  );
-                })}
-
-              {isOn("dropin") && (
-                <div className="pp-plan">
-                  <div className="pt">
-                    <h5>Drop-in class</h5>
-                    <span className="price">{DROPIN_PRICE}</span>
-                  </div>
-                  {/* A drop-in is a seat in one session, so what's actually
-                      running daily is the useful thing to name here. */}
-                  <p className="pdesc">
-                    {running.length
-                      ? running
-                          .map((l) => `${l.title} · ${patternLabel(l)} ${timeLabel(l.time)}`)
-                          .join(" — ")
-                      : "One session · pay as you go"}
-                  </p>
-                  <button className="pp-btn">Book a class</button>
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="pp-foot">
-            Powered by <b>KlubYou</b>
-          </div>
-        </div>
+      <div className="phone-url">
+        <Icon name="lock" size={12} strokeWidth={2} />
+        klubyou.co/{studio.handle}
       </div>
     </div>
   );

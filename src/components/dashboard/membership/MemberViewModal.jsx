@@ -1,17 +1,6 @@
 import Modal from "../../common/Modal";
-import Icon from "../../common/Icon";
-import { money } from "../../../lib/stats";
-import {
-  comparisonRows,
-  publishedOnly,
-  discountPercent,
-  hasDiscount,
-  listPrice,
-  planLabel,
-  planName,
-  planPrice,
-  rowIncludes,
-} from "../../../lib/membership";
+import MembershipComparison from "./MembershipComparison";
+import { comparisonRows, publishedOnly } from "../../../lib/membership";
 
 // What a member sees. The same idiom as "Preview as member" on a programme:
 // you edit in one place and check the result here, rather than flipping the
@@ -28,7 +17,7 @@ export default function MemberViewModal({ open, plans, bundles, programmes, less
       title="What members see"
       maxWidth={760}
       footer={
-        <button className="btn btn-ghost" onClick={onClose}>
+        <button className="btn btn-ghost" onClick={onClose} data-tip="Back to editing">
           Close preview
         </button>
       }
@@ -40,64 +29,15 @@ export default function MemberViewModal({ open, plans, bundles, programmes, less
         </p>
       )}
 
-      <div className="mv-plans">
-        {/* Every card renders the same rows, empty where a plan has nothing to
-            put in them, so the names, prices and buttons line up across all
-            three instead of each card stacking to its own height. */}
-        {live.map((p) => (
-          <div className={`mv-plan${p.bestSeller ? " best" : ""}`} key={p.id}>
-            <span className="mv-flag" aria-hidden={!p.bestSeller}>
-              {p.bestSeller ? "Best seller" : ""}
-            </span>
-            <b>{planName(p)}</b>
-            <span className="mv-len">{planLabel(p)}</span>
-            <div className="mv-price">
-              <s className="mv-was">{hasDiscount(p) ? money(listPrice(p)) : ""}</s>
-              <strong>{planPrice(p)}</strong>
-            </div>
-            <span className="mv-off" aria-hidden={discountPercent(p) === 0}>
-              {discountPercent(p) > 0 ? `${discountPercent(p)}% off` : ""}
-            </span>
-            <button className="btn btn-coral btn-block btn-sm">Choose</button>
-          </div>
-        ))}
-      </div>
+      <MembershipComparison
+        plans={live}
+        bundles={bundles}
+        programmes={programmes}
+        lessons={lessons}
+        features={features}
+      />
 
-      {!live.length ? null : rows.length ? (
-        <div className="mv-table">
-          <table>
-            <thead>
-              <tr>
-                <th>What you get</th>
-                {live.map((p) => (
-                  <th key={p.id} className={p.bestSeller ? "on" : undefined}>
-                    {planName(p)}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id}>
-                  <td>
-                    <b>{row.title}</b>
-                    <small>{row.detail}</small>
-                  </td>
-                  {live.map((p) => (
-                    <td key={p.id} className={p.bestSeller ? "on" : undefined}>
-                      {rowIncludes(row, p.id) ? (
-                        <Icon name="check" size={17} strokeWidth={3} className="mv-yes" />
-                      ) : (
-                        <span className="mv-no">—</span>
-                      )}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
+      {live.length > 0 && !rows.length && (
         <p className="hint">
           These plans open nothing yet — publish a bundle or a benefit, then tick it into a plan.
         </p>

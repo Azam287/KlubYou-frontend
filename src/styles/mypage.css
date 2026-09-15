@@ -34,30 +34,300 @@
 .sw.on {
   border-color: var(--ink);
 }
-.toggle-row {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+/* Editor hidden: its column shrinks to nothing and the preview has the row. */
+.page-wrap.solo {
+  grid-template-columns: 0 minmax(0, 1fr);
 }
-.tg {
-  padding: 0.42rem 0.8rem;
-  border-radius: 999px;
-  border: 1.5px solid var(--line);
-  background: #fff;
-  font-size: 0.85rem;
-  font-weight: 600;
+
+/* The editor column carries its own collapse arrow, pinned to its right edge
+   and centred on the gap. The track runs the column's full height so the
+   arrow can stick near the top of the screen while the editor scrolls. */
+.ed-col {
+  position: relative;
+  min-width: 0;
+  /* Full height of the row even when the editor is hidden, so the arrow has
+     the whole length of the preview to travel along. */
+  align-self: stretch;
+}
+.ed-track {
+  position: absolute;
+  top: 0;
+  right: -25px;
+  bottom: 0;
+  width: 30px;
+  pointer-events: none;
+}
+.ed-col.closed .ed-track {
+  right: -25px;
+  min-height: 60px;
+}
+.ed-handle {
+  /* Halfway down the screen, like a panel's edge handle — clear of the preview
+     bar at the top, and still halfway down as the editor scrolls. The margin
+     puts it there before any scrolling: half the screen, less the fixed top
+     bar and the page's top padding. */
+  position: sticky;
+  top: 100px;
+  /* margin-top: max(18px, calc(50vh - var(--topbar-h) - 39px)); */
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--card);
   color: var(--ink-soft);
+  display: grid;
+  place-items: center;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
+  pointer-events: auto;
+  box-shadow: 0 4px 12px -6px rgba(34, 26, 56, 0.35);
+  z-index: 5;
 }
-.tg.on {
-  background: var(--ink);
-  color: #fff;
+.ed-handle:hover {
+  color: var(--ink);
   border-color: var(--ink);
 }
 
+@media (max-width: 860px) {
+  .page-wrap,
+  .page-wrap.solo {
+    grid-template-columns: 1fr;
+  }
+  /* Stacked, there's no edge between the columns to sit on, so the arrow
+     sits at the top, above the editor. */
+  .ed-track,
+  .ed-col.closed .ed-track {
+    position: static;
+    width: auto;
+    min-height: 0;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .ed-col {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+  .ed-handle {
+    position: static;
+    margin-top: 0;
+  }
+}
+
+/* ---------- editor ---------- */
+.eg-n {
+  font-weight: 600;
+  color: var(--ink-soft);
+  opacity: 0.8;
+  margin-left: 0.3rem;
+}
+/* A light swatch on a light card needs an edge to exist at all. */
+.editor .sw {
+  box-shadow: inset 0 0 0 1px rgba(34, 26, 56, 0.14);
+  padding: 0;
+  outline-offset: 2px;
+}
+.sw-custom {
+  position: relative;
+  overflow: hidden;
+  background: conic-gradient(#f15b41, #e39a2c, #2e7d50, #3a7bd5, #7b4ad8, #f15b41);
+}
+.sw-custom input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+.cl-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.cl-row + .cl-row {
+  margin-top: 12px;
+}
+.cl-lbl {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.cl-lbl small {
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+.cl-note {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  color: #a9701a;
+}
+.cl-row .swatches {
+  flex-wrap: wrap;
+}
+.cl-ok {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 12px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--good);
+}
+.cl-warn {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(227, 154, 44, 0.1);
+  border: 1px solid rgba(227, 154, 44, 0.45);
+  font-size: 0.84rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.lk-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.lk-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--line-soft);
+}
+.lk-top {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.lk-top .field {
+  flex: 1;
+  min-width: 0;
+}
+.lk-label {
+  font-size: 0.86rem;
+}
+.lk-x {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink-soft);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.lk-x:hover {
+  border-color: var(--coral);
+  color: var(--coral-deep);
+}
+.pc-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+.pc-row b {
+  display: block;
+  font-size: 0.9rem;
+}
+.pc-row small {
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+}
+
+/* ---------- the phone the page is previewed in ---------- */
+.phone-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+/* The preview column stays in view while the longer editor scrolls past it. */
+.pv-col {
+  min-width: 0;
+}
+.pv-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  /* Along the right edge of the preview column, out of the way of the page. */
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-bottom: 12px;
+}
+.pv-lbl {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+/* The table/cards switch from Membership, with words: two devices aren't as
+   self-explanatory as two layouts. */
+.viewbtn.pv-btn {
+  width: auto;
+  gap: 0.35rem;
+  padding: 0 0.7rem;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: inherit;
+}
+.phone {
+  position: relative;
+  width: min(100%, 380px);
+  padding: 10px;
+  border-radius: 46px;
+  background: #15101f;
+  box-shadow: var(--shadow), inset 0 0 0 1.5px #3b3449;
+}
+/* The camera cut-out, so it reads as a phone at a glance. */
+.phone::before {
+  content: "";
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92px;
+  height: 26px;
+  border-radius: 20px;
+  background: #0b0811;
+  z-index: 3;
+}
+.phone-screen {
+  position: relative;
+  height: 720px;
+  max-height: calc(100vh - 150px);
+  min-height: 520px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  border-radius: 36px;
+  background: #fff;
+  scrollbar-width: none;
+}
+.phone-screen::-webkit-scrollbar {
+  display: none;
+}
+.phone-url {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+/* ---------- the browser window, for the web view ---------- */
 .browser {
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -86,204 +356,853 @@
 }
 .browser-url {
   flex: 1;
-  background: #fff;
-  border-radius: 8px;
-  padding: 0.36rem 0.7rem;
-  font-size: 0.82rem;
-  color: var(--ink-soft);
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  padding: 0.36rem 0.7rem;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
 }
 .browser-view {
-  max-height: 660px;
+  height: 720px;
+  max-height: calc(100vh - 170px);
+  min-height: 520px;
   overflow: auto;
-  background: var(--card);
 }
 
-.pp-cover {
-  height: 132px;
-  background: linear-gradient(120deg, #3a2e63, #241a3d);
+/* ---------- the public page ----------
+   Three colours in, everything else mixed from them. Background and text set
+   the page; the accent fills the avatar, intro video, link icons, buttons and
+   highlights, with --pg-on-accent (white or dark, worked out in lib/page.js)
+   as the label on top. Softer text, lines and card fills come from the text. */
+.pg {
+  --pg-soft: color-mix(in srgb, var(--pg-text) 66%, var(--pg-bg));
+  --pg-line: color-mix(in srgb, var(--pg-text) 14%, var(--pg-bg));
+  --pg-card: color-mix(in srgb, var(--pg-text) 5%, var(--pg-bg));
+  position: relative;
+  min-height: 100%;
+  background: var(--pg-bg);
+  color: var(--pg-text);
+  transition: background 0.15s, color 0.15s;
 }
-.pp-head {
-  padding: 0 26px;
-  margin-top: -40px;
+.pg-cover {
+  position: relative;
+  height: 150px;
+  background:
+    radial-gradient(circle at 80% 10%, color-mix(in srgb, var(--pg-bg) 40%, transparent), transparent 60%),
+    linear-gradient(150deg, color-mix(in srgb, var(--pg-accent) 30%, var(--pg-bg)), color-mix(in srgb, var(--pg-accent) 8%, var(--pg-bg)));
 }
-.pp-av {
-  width: 80px;
-  height: 80px;
-  border-radius: 22px;
-  border: 4px solid var(--card);
-  background: #d8d2e6;
+.pg-round {
+  position: absolute;
+  top: 54px;
+  right: 16px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
   display: grid;
   place-items: center;
-  color: #3a2e63;
+  background: color-mix(in srgb, var(--pg-bg) 82%, transparent);
+  color: var(--pg-text);
 }
-.pp-name {
-  font-size: 1.55rem;
-  margin-top: 0.6rem;
+.pg-col {
+  position: relative;
+  margin-top: -50px;
+  padding: 0 18px;
 }
-.pp-tag {
-  color: var(--ink-soft);
-  margin-top: 0.15rem;
+.pg-head {
+  text-align: center;
 }
-.pp-stats {
-  display: flex;
-  gap: 1.3rem;
-  margin-top: 0.9rem;
-  font-size: 0.85rem;
-  color: var(--ink-soft);
-  font-weight: 600;
-  flex-wrap: wrap;
+/* The ring round the avatar, the way profile pictures are framed on social apps. */
+.pg-av {
+  width: 98px;
+  height: 98px;
+  margin: 0 auto;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--pg-accent);
 }
-.pp-stats b {
-  color: var(--ink);
+.pg-av span {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 3px solid var(--pg-bg);
+  display: grid;
+  place-items: center;
+  background: var(--pg-accent);
+  color: var(--pg-on-accent);
   font-family: "Bricolage Grotesque";
+  font-size: 2.2rem;
+  font-weight: 700;
 }
-.pp-section {
-  padding: 22px 26px;
-  border-top: 1px solid var(--line-soft);
+.pg-name {
+  margin-top: 12px;
+  font-size: 1.45rem;
+  color: inherit;
 }
-.pp-section.first {
-  border-top: none;
-  margin-top: 18px;
+.pg-handle {
+  margin-top: 3px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--pg-soft);
 }
-.pp-about {
-  color: #413b54;
-  line-height: 1.6;
+.pg-tag {
+  margin-top: 8px;
+  font-size: 0.93rem;
+  font-weight: 600;
+}
+.pg-ph {
+  opacity: 0.45;
+  font-style: italic;
+}
+.pg-about {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--pg-soft);
   white-space: pre-wrap;
 }
-.pp-h {
-  font-size: 1.1rem;
-  margin-bottom: 14px;
+.pg-video {
+  position: relative;
+  margin-top: 18px;
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+  border-radius: 18px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(160deg, var(--pg-accent), color-mix(in srgb, var(--pg-accent) 78%, var(--pg-bg)));
+  color: var(--pg-on-accent);
 }
-.pp-plans {
+.pg-play {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--pg-on-accent);
+  color: var(--pg-accent);
+}
+.pg-play svg {
+  margin-left: 3px;
+}
+.pg-video-lbl {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  line-height: 1.25;
 }
-.pp-plan {
-  border: 1.5px solid var(--line);
-  border-radius: 14px;
-  padding: 16px;
+.pg-video-lbl b {
+  font-size: 0.9rem;
 }
-.pp-plan.feat {
-  border-color: var(--coral);
+.pg-video-lbl small {
+  font-size: 0.74rem;
+  opacity: 0.8;
 }
-.pp-plan .pt {
+.pg-links {
+  margin-top: 18px;
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 10px;
 }
-.pp-plan h5 {
-  font-family: "Bricolage Grotesque";
-  font-size: 1.06rem;
-  font-weight: 700;
-}
-.pp-plan .price {
-  font-family: "Bricolage Grotesque";
-  font-weight: 700;
-  font-size: 1.3rem;
-  white-space: nowrap;
-}
-.pp-plan .pdesc {
-  color: var(--ink-soft);
-  font-size: 0.86rem;
-  margin: 0.35rem 0 12px;
-}
-.pp-opts {
+.pg-socials {
   display: flex;
-  gap: 0.4rem;
-  margin: 11px 0 14px;
+  justify-content: center;
   flex-wrap: wrap;
+  gap: 10px;
 }
-.pp-opt {
-  font-size: 0.8rem;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 0.28rem 0.55rem;
-  color: var(--ink-soft);
-  font-weight: 600;
-  background: none;
-  cursor: pointer;
-  font-family: inherit;
+.pg-social {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--pg-card);
+  border: 1px solid var(--pg-line);
 }
-.pp-opt.on {
-  border-color: var(--coral);
-  color: var(--coral-deep);
-  background: rgba(241, 91, 65, 0.07);
+.pg-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px 9px 9px;
+  border-radius: 999px;
+  background: var(--pg-card);
+  border: 1px solid var(--pg-line);
+  font-weight: 700;
+  font-size: 0.92rem;
 }
-.pp-btn {
-  width: 100%;
-  background: var(--ink);
-  color: #fff;
-  border-radius: 10px;
-  padding: 0.72rem;
-  font-weight: 600;
-  border: none;
-  font-family: inherit;
-  font-size: 0.95rem;
+.pg-link-ic {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--pg-accent);
+  color: var(--pg-on-accent);
 }
-.pp-plan.feat .pp-btn {
-  background: var(--coral);
+.pg-link-t {
+  flex: 1;
+  overflow-wrap: anywhere;
 }
-.pp-foot {
+.pg-sec {
+  margin-top: 28px;
+}
+.pg-sec h3 {
+  margin-bottom: 12px;
+  font-size: 1.05rem;
+  color: inherit;
+}
+.pg-product small {
+  color: var(--pg-soft);
+  font-size: 0.78rem;
+}
+.pg-btn {
+  display: block;
+  margin-top: 12px;
+  padding: 0.68rem;
+  border-radius: 999px;
   text-align: center;
-  padding: 20px;
-  color: var(--ink-soft);
-  font-size: 0.82rem;
-  border-top: 1px solid var(--line-soft);
+  background: var(--pg-accent);
+  color: var(--pg-on-accent);
+  font-weight: 700;
+  font-size: 0.92rem;
 }
-.pp-foot b {
-  color: var(--ink);
+.pg-btn.sm {
+  display: inline-block;
+  margin: 0;
+  padding: 0.36rem 0.85rem;
+  font-size: 0.8rem;
+}
+/* A shop row you swipe through, the next item peeking in at the edge. */
+.pg-rail {
+  display: flex;
+  gap: 10px;
+  margin: 0 -18px;
+  padding: 2px 18px 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 18px;
+  scrollbar-width: none;
+}
+.pg-rail::-webkit-scrollbar {
+  display: none;
+}
+.pg-product {
+  flex: 0 0 78%;
+  scroll-snap-align: start;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--pg-card);
+  border: 1px solid var(--pg-line);
+}
+.pg-rail.single .pg-product {
+  flex-basis: 100%;
+}
+.pg-thumb {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: linear-gradient(140deg, var(--pg-accent), color-mix(in srgb, var(--pg-accent) 55%, var(--pg-bg)));
+}
+.pg-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  background: var(--pg-bg);
+  color: var(--pg-text);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+/* Over the programme's own artwork, whatever colour it is, so it's fixed. */
+.pg-thumb-play {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.92);
+  color: #221a38;
+}
+.pg-product-b {
+  padding: 12px;
+}
+.pg-product-b b {
+  display: block;
   font-family: "Bricolage Grotesque";
+  font-size: 0.98rem;
+}
+.pg-product-f {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+}
+.pg-product-f strong {
+  font-family: "Bricolage Grotesque";
+  font-size: 1.02rem;
+}
+.pg-foot {
+  padding: 26px 0 18px;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--pg-soft);
+}
+.pg-foot b {
+  font-family: "Bricolage Grotesque";
+  color: var(--pg-text);
+}
+/* The join button stays within thumb's reach as the page scrolls. */
+.pg-sticky {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  padding: 18px 18px 16px;
+  background: linear-gradient(to top, var(--pg-bg) 62%, transparent);
+}
+.pg-sticky .pg-btn {
+  margin: 0;
+  box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--pg-accent) 70%, transparent);
 }
 
-@media (max-width: 860px) {
-  .page-wrap {
-    grid-template-columns: 1fr;
+/* An uploaded header image fills the band; without one it stays tinted. */
+.pg-cover.img {
+  background-size: cover;
+  background-position: center;
+}
+
+/* ---------- web view ----------
+   The same page, widened: a bar across the top holds the join button, the
+   cover grows, and cards sit side by side instead of stacking or swiping. */
+.pg.web .pg-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 10px 20px;
+  background: color-mix(in srgb, var(--pg-bg) 90%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--pg-line);
+}
+.pg-topbar-id,
+.pg-topbar-r {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+}
+.pg-topbar-id b {
+  font-family: "Bricolage Grotesque";
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pg-mini-av {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--pg-accent);
+  color: var(--pg-on-accent);
+  font-family: "Bricolage Grotesque";
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+.pg.web .pg-topbar .pg-round {
+  position: static;
+  border: 1px solid var(--pg-line);
+}
+.pg.web .pg-cover {
+  height: 220px;
+}
+.pg.web .pg-col {
+  max-width: 720px;
+  margin: -56px auto 0;
+  padding: 0 24px;
+}
+.pg.web .pg-about {
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.pg.web .pg-video,
+.pg.web .pg-links {
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.pg.web .pg-sec h3 {
+  font-size: 1.2rem;
+}
+.pg.web .pg-rail {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+}
+
+/* ---------- images, in the editor ---------- */
+.hi-box {
+  height: 96px;
+  border-radius: 12px;
+  border: 1.5px dashed var(--line);
+  display: grid;
+  place-items: center;
+  padding: 0 12px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  background-size: cover;
+  background-position: center;
+}
+.hi-box.has {
+  border-style: solid;
+}
+.hi-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+/* ---------- membership comparison, in the page's colours ----------
+   The shared MembershipComparison component, restyled from the two page
+   colours instead of the dashboard's coral. */
+.pg .mv-plans {
+  margin-bottom: 14px;
+}
+.pg .mv-plan {
+  background: var(--pg-card);
+  border-color: var(--pg-line);
+  border-radius: 18px;
+  padding: 14px 12px;
+}
+.pg .mv-plan.best {
+  border: 2px solid var(--pg-accent);
+}
+.pg .mv-flag,
+.pg .mv-off {
+  color: var(--pg-accent);
+}
+.pg .mv-len,
+.pg .mv-was {
+  color: var(--pg-soft);
+}
+.mv-choose {
+  display: block;
+  margin-top: auto;
+  padding: 0.55rem;
+  border-radius: 999px;
+  background: var(--pg-accent);
+  color: var(--pg-on-accent);
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+.pg .mv-table {
+  border-color: var(--pg-line);
+  border-radius: 16px;
+}
+.pg .mv-table th,
+.pg .mv-table td {
+  border-bottom-color: var(--pg-line);
+}
+.pg .mv-table th {
+  background: var(--pg-card);
+  color: var(--pg-soft);
+}
+.pg .mv-table th.on,
+.pg .mv-table td.on {
+  background: color-mix(in srgb, var(--pg-accent) 8%, var(--pg-bg));
+}
+.pg .mv-table td:first-child small {
+  color: var(--pg-soft);
+}
+.pg .mv-yes {
+  color: var(--pg-accent);
+}
+.pg .mv-no {
+  color: var(--pg-soft);
+  opacity: 0.6;
+}
+/* On a phone the cards swipe, like the programmes, and the table scrolls
+   sideways with the "What you get" column held in place. */
+.pg.mobile .mv-plans {
+  display: flex;
+  gap: 10px;
+  margin: 0 -18px 14px;
+  padding: 12px 18px 4px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 0 18px;
+  scrollbar-width: none;
+}
+.pg.mobile .mv-plans::-webkit-scrollbar {
+  display: none;
+}
+.pg.mobile .mv-plan {
+  flex: 0 0 62%;
+  scroll-snap-align: start;
+}
+.pg.mobile .mv-table th,
+.pg.mobile .mv-table td {
+  padding: 0.5rem;
+  font-size: 0.78rem;
+}
+.pg.mobile .mv-table td:first-child,
+.pg.mobile .mv-table th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 128px;
+  background: var(--pg-bg);
+}
+.pg.mobile .mv-table th:first-child {
+  background: color-mix(in srgb, var(--pg-text) 5%, var(--pg-bg));
+}
+.pg.web .mv-plans {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+/* ---------- choosing programmes ---------- */
+/* The whole list, not a scrolling box: it's short, and a hidden tick is a
+   choice you can't see. */
+.pp-pick {
+  max-height: none;
+}
+.pp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* ---------- section tiles ---------- */
+.tiles-hint {
+  margin: -6px 0 10px;
+}
+.tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tile {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  transition: border-color 0.12s, box-shadow 0.12s, opacity 0.12s;
+}
+.tile.open {
+  border-color: rgba(34, 26, 56, 0.28);
+}
+.tile.dragging {
+  opacity: 0.45;
+}
+/* Where the dragged tile will land: a line above or below this one. */
+.tile.drop-before::before,
+.tile.drop-after::after {
+  content: "";
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--coral);
+}
+.tile.drop-before::before {
+  top: -6px;
+}
+.tile.drop-after::after {
+  bottom: -6px;
+}
+.tile-h {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 6px 2px 2px;
+}
+.tile-grip,
+.tile-grip-space {
+  flex: none;
+  width: 28px;
+  height: 38px;
+}
+.tile-grip {
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--ink-soft);
+  display: grid;
+  place-items: center;
+  cursor: grab;
+}
+.tile-grip:hover,
+.tile-grip:focus-visible {
+  background: var(--paper);
+  color: var(--ink);
+}
+.tile-grip:active {
+  cursor: grabbing;
+}
+.tile-toggle {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.3rem;
+  border: none;
+  background: none;
+  text-align: left;
+  font-family: inherit;
+  color: var(--ink);
+  cursor: pointer;
+}
+.tile-toggle b {
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+.tile-sum {
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tile-chev {
+  flex: none;
+  color: var(--ink-soft);
+  transition: transform 0.15s;
+}
+.tile.open .tile-chev {
+  transform: rotate(180deg);
+}
+.tile-body {
+  padding: 4px 14px 14px;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 12px;
+}
+/* The three page colours, as the Colours tile's summary. */
+.tile-dots {
+  display: inline-flex;
+  gap: 4px;
+  vertical-align: middle;
+}
+.tile-dots i {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgba(34, 26, 56, 0.18);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tile,
+  .tile-chev {
+    transition: none;
   }
 }
 
-/* "Watch the intro" on a programme's plan card — the one thing a visitor can
-   see before paying. */
-.pp-watch {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  background: none;
-  border: none;
-  padding: 0;
-  margin-bottom: 8px;
-  font-family: inherit;
+/* ---------- the phone's status bar ---------- */
+/* Sits over the top of the screen and stays there; the page scrolls beneath
+   it. Frosted from the page background so the cover shows through at the top. */
+.phone-status {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  height: 46px;
+  margin-bottom: -46px;
+  padding: 14px 26px 0 30px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  background: color-mix(in srgb, var(--pg-bg) 82%, transparent);
+  backdrop-filter: blur(10px);
+  color: var(--pg-text);
   font-size: 0.8rem;
   font-weight: 700;
-  color: var(--coral-deep);
-  cursor: pointer;
+  pointer-events: none;
+}
+.phone-status-r {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.phone-status svg {
+  fill: currentColor;
+}
+/* The cut-out sits over the status bar, as on the phone itself. */
+.phone::before {
+  z-index: 7;
 }
 
-/* What the selected length unlocks, on the page a visitor sees. */
-.pp-inc {
-  list-style: none;
-  margin: 10px 0 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
+/* ---------- fitted to the window (desktop) ----------
+   My page is a workspace, not a document: everything fits between the header
+   and the bottom of the window. The editor scrolls inside its own column, the
+   preview stretches to the height that's left, and the page itself doesn't
+   scroll — so nothing slides up under the fixed header. Narrow screens keep
+   the normal stacked, scrolling layout. */
+@media (min-width: 861px) {
+  .content:has(> .mypage) {
+    padding-bottom: 24px;
+  }
+  .mypage .page-wrap {
+    height: calc(100vh - var(--topbar-h) - 48px);
+    height: calc(100dvh - var(--topbar-h) - 48px);
+    min-height: 480px;
+    align-items: stretch;
+  }
+  .mypage .ed-col {
+    min-height: 0;
+  }
+  .mypage .editor {
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  .mypage .pv-col {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .mypage .phone-stage {
+    flex: 1;
+    min-height: 0;
+    justify-content: center;
+  }
+  .mypage .phone {
+    flex: 1;
+    min-height: 0;
+    max-height: 860px;
+    display: flex;
+    flex-direction: column;
+  }
+  .mypage .phone-screen {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+  }
+  .mypage .browser {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .mypage .browser-view {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+  }
 }
-.pp-inc li {
+
+/* ---------- hiding a section ---------- */
+.tile-eye {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--ink-soft);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.tile-eye:hover {
+  background: var(--paper);
+  color: var(--ink);
+}
+.tile-eye.off {
+  color: var(--coral-deep);
+  background: rgba(241, 91, 65, 0.1);
+}
+/* A hidden section stays in the list, faded, so it's easy to bring back. */
+.tile.off .tile-toggle b,
+.tile.off .tile-grip {
+  opacity: 0.5;
+}
+.tile-off {
+  padding: 0.08rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(34, 26, 56, 0.08);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* The profile photo sits beside its buttons, round, the size of a thumbnail. */
+.img-field.round .img-field-row {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.8rem;
-  color: var(--ink-soft);
+  gap: 14px;
 }
-.pp-inc svg {
-  color: var(--good);
+.img-field.round .hi-box {
+  flex: none;
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  border-radius: 50%;
+  font-family: "Bricolage Grotesque";
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.img-field.round .hi-actions {
+  margin-top: 0;
+}
+/* An uploaded photo fills the avatar, and the small one in the web top bar. */
+.pg-av span.img,
+.pg-mini-av[style] {
+  background-size: cover;
+  background-position: center;
+}
+
+/* ---------- the intro video player ---------- */
+.pg-video.player {
+  background: #000;
+}
+.pg-video.player iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/* ---------- header actions ---------- */
+/* Copy link and, when there's something to publish, Publish changes. */
+.hdr-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   flex: none;
 }
-.pp-opt s {
-  opacity: 0.6;
-  margin-left: 0.3rem;
-  font-size: 0.78rem;
+@media (max-width: 860px) {
+  .hdr-actions {
+    gap: 6px;
+  }
+  .hdr-actions .btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
 }

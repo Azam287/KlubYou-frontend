@@ -21,19 +21,30 @@ export default function FeatureFormModal({ open, editing, onClose, onSave }) {
       maxWidth={480}
       footer={
         <>
-          <button className="btn btn-ghost" onClick={onClose}>
+          <button className="btn btn-ghost" onClick={onClose} data-tip="Close without saving">
             Cancel
           </button>
-          <button
-            className="btn btn-coral"
-            disabled={!form.title.trim()}
-            onClick={() => {
-              onSave({ ...form, title: form.title.trim(), detail: form.detail.trim() });
-              onClose();
-            }}
+          <span
+            className="tip-wrap"
+            data-tip={
+              !form.title.trim()
+                ? "Give the benefit a name first"
+                : editing
+                  ? "Save the changes to this benefit"
+                  : "Add it as a draft — publish it from its card, then put it in a plan"
+            }
           >
-            {editing ? "Save benefit" : "Add benefit"}
-          </button>
+            <button
+              className="btn btn-coral"
+              disabled={!form.title.trim()}
+              onClick={() => {
+                onSave({ ...form, title: form.title.trim(), detail: form.detail.trim() });
+                onClose();
+              }}
+            >
+              {editing ? "Save benefit" : "Add benefit"}
+            </button>
+          </span>
         </>
       }
     >

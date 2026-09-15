@@ -2,6 +2,7 @@ import { Navigate, Route, HashRouter, Routes } from "react-router-dom";
 import { ToastProvider } from "./context/ToastContext";
 import { OnboardingProvider } from "./context/OnboardingContext";
 import { AppDataProvider } from "./context/AppDataContext";
+import TooltipLayer from "./components/common/TooltipLayer";
 
 import OnboardingLayout from "./components/onboarding/OnboardingLayout";
 import AccountStep from "./components/onboarding/AccountStep";
@@ -23,6 +24,8 @@ import MembershipPage from "./components/dashboard/membership/MembershipPage";
 export default function App() {
   return (
     <ToastProvider>
+      {/* Every data-tip="…" in the app is shown by this one layer. */}
+      <TooltipLayer />
       <OnboardingProvider>
         <AppDataProvider>
           <HashRouter>

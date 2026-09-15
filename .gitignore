@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Claude Code: local marker for the docs Stop hook
+.claude/docs-reviewed
+.claude/settings.local.json

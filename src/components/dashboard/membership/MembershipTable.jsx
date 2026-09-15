@@ -71,7 +71,10 @@ export default function MembershipTable({
                   {planIsEverything(p) ? " · everything" : ""}
                 </span>
                 {planIsHollow(p, bundles, programmes, lessons) && (
-                  <span className="mt-warn" title="Nothing in this plan is published yet">
+                  <span
+                    className="mt-warn"
+                    data-tip="Every bundle it opens is still a draft, or none is chosen — members would pay for nothing"
+                  >
                     Opens nothing
                   </span>
                 )}
@@ -80,7 +83,7 @@ export default function MembershipTable({
                 {onEditPlan && (
                   <button
                     className="mt-edit"
-                    title={`Edit ${planName(p)}`}
+                    data-tip={`Edit ${planName(p)} — name, length, price and what it opens`}
                     aria-label={`Edit ${planName(p)}`}
                     onClick={() => onEditPlan(p)}
                   >
@@ -105,7 +108,14 @@ export default function MembershipTable({
                       <button
                         className={`mt-caret${expanded ? " on" : ""}`}
                         aria-expanded={expanded}
-                        title={expanded ? "Hide what's inside" : "Show what's inside"}
+                        aria-label={expanded ? "Hide what's inside" : "Show what's inside"}
+                        data-tip={
+                          expanded
+                            ? "Hide what's in this bundle"
+                            : `Show the ${row.contents.length} ${
+                                row.contents.length === 1 ? "thing" : "things"
+                              } in this bundle`
+                        }
                         onClick={() => setOpen((o) => ({ ...o, [row.id]: !o[row.id] }))}
                       >
                         <Icon name="chevronDown" size={13} strokeWidth={2.4} />
@@ -131,14 +141,25 @@ export default function MembershipTable({
                   // there is nothing here to switch off.
                   const locked = rowLocked(row, p.id);
                   return (
-                    <td key={p.id} className={p.bestSeller ? "on" : undefined}>
+                    <td
+                      key={p.id}
+                      className={p.bestSeller ? "on" : undefined}
+                      // A disabled button gets no hover, so a locked cell's
+                      // reason sits on the cell around it.
+                      data-tip={
+                        locked
+                          ? `${planName(p)} opens everything — edit the plan and choose bundles to leave this out`
+                          : undefined
+                      }
+                    >
                       <button
                         className={`mt-cell${on ? " yes" : ""}${locked ? " locked" : ""}`}
                         aria-pressed={on}
+                        aria-label={`${row.title} in ${planName(p)}`}
                         disabled={locked}
-                        title={
+                        data-tip={
                           locked
-                            ? `${planName(p)} opens everything — change the plan to choose bundles instead`
+                            ? undefined
                             : on
                               ? `In ${planName(p)} — click to take it out`
                               : `Not in ${planName(p)} — click to add it`
@@ -163,27 +184,60 @@ export default function MembershipTable({
                         not on sale — the same lifecycle a programme has. */}
                     <button
                       className={`mt-eye${row.draft ? " off" : ""}`}
-                      title={row.draft ? "Publish to members" : "Unpublish — members stop seeing it"}
+                      aria-label={row.draft ? "Publish" : "Unpublish"}
+                      data-tip={
+                        row.draft
+                          ? "Publish — members can see it"
+                          : "Unpublish — members stop seeing it, and it leaves this table"
+                      }
                       onClick={() => onTogglePublished(row)}
                     >
                       <Icon name={row.draft ? "eyeOff" : "eye"} size={15} strokeWidth={1.9} />
                     </button>
                     <KebabMenu
                       size="sm"
+                      tip="Edit, reorder or remove this row"
                       items={[
                         {
                           label: row.kind === "bundle" ? "Edit bundle" : "Edit benefit",
                           icon: "link",
+                          tip:
+                            row.kind === "bundle"
+                              ? "Change its name, description and what's in it"
+                              : "Change its name and detail line",
                           onClick: () => onEdit(row),
                         },
                         ...(rows[0]?.id === row.id
                           ? []
-                          : [{ label: "Move up", icon: "chevronUp", onClick: () => onMove(row, -1) }]),
+                          : [
+                              {
+                                label: "Move up",
+                                icon: "chevronUp",
+                                tip: "Swap with the row above — members see the same order",
+                                onClick: () => onMove(row, -1),
+                              },
+                            ]),
                         ...(rows[rows.length - 1]?.id === row.id
                           ? []
-                          : [{ label: "Move down", icon: "chevronDown", onClick: () => onMove(row, 1) }]),
+                          : [
+                              {
+                                label: "Move down",
+                                icon: "chevronDown",
+                                tip: "Swap with the row below — members see the same order",
+                                onClick: () => onMove(row, 1),
+                              },
+                            ]),
                         null,
-                        { label: "Remove", icon: "trash", danger: true, onClick: () => onDelete(row) },
+                        {
+                          label: "Remove",
+                          icon: "trash",
+                          danger: true,
+                          tip:
+                            row.kind === "bundle"
+                              ? "Delete the bundle — plans using it open less"
+                              : "Delete the benefit from every plan",
+                          onClick: () => onDelete(row),
+                        },
                       ]}
                     />
                   </div>

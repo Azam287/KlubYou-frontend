@@ -1,35 +1,55 @@
 import Icon from "../../common/Icon";
+import { STATE_FILTERS } from "../../../lib/members";
+import AccessFilter from "../shared/AccessFilter";
 
-const STATUS_CHIPS = [
-  { value: "all", label: "All" },
-  { value: "active", label: "Active" },
-  { value: "inactive", label: "Inactive" },
-  { value: "lead", label: "Leads" },
-];
-
-export default function MemberFilters({ status, onStatus, plan, onPlan, search, onSearch }) {
+// Where they stand (chips, each with its count), what they bought (a list of
+// the actual plans and programmes), and a search by name or email.
+export default function MemberFilters({
+  state,
+  onState,
+  counts,
+  access,
+  onAccess,
+  plans = [],
+  programmes = [],
+  search,
+  onSearch,
+}) {
   return (
     <div className="filters">
-      <div className="chips">
-        {STATUS_CHIPS.map((c) => (
+      <div className="chips" role="group" aria-label="Filter by status">
+        {STATE_FILTERS.map((f) => (
           <button
-            key={c.value}
-            className={`chip${status === c.value ? " on" : ""}`}
-            onClick={() => onStatus(c.value)}
+            key={f.key}
+            className={`chip${state === f.key ? " on" : ""}`}
+            aria-pressed={state === f.key}
+            data-tip={f.tip}
+            onClick={() => onState(f.key)}
           >
-            {c.label}
+            {f.label} <span className="chip-n">{counts[f.key] ?? 0}</span>
           </button>
         ))}
       </div>
-      <select className="field selectw" value={plan} onChange={(e) => onPlan(e.target.value)}>
-        <option value="all">All access</option>
-        <option value="studio">Studio subscription</option>
-        <option value="programme">Single programme</option>
-        <option value="none">No plan yet</option>
-      </select>
+
+      <AccessFilter
+        id="member-access"
+        label="Filter by what they bought"
+        value={access}
+        onChange={onAccess}
+        plans={plans}
+        programmes={programmes}
+        allLabel="Everything they bought"
+        includeNone
+      />
+
       <div className="search">
         <Icon name="search" size={16} color="#5B5470" />
-        <input value={search} onChange={(e) => onSearch(e.target.value)} placeholder="Search members" />
+        <input
+          value={search}
+          onChange={(e) => onSearch(e.target.value)}
+          placeholder="Search by name or email"
+          aria-label="Search members by name or email"
+        />
       </div>
     </div>
   );

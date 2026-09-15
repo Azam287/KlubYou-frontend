@@ -19,7 +19,7 @@ export default function Modal({ open, onClose, title, children, footer, maxWidth
       <div className="modal" style={maxWidth ? { maxWidth } : undefined}>
         <div className="modal-h">
           <h3>{title}</h3>
-          <button className="modal-x" onClick={onClose} aria-label="Close">
+          <button className="modal-x" onClick={onClose} aria-label="Close" data-tip="Close (Esc)">
             ✕
           </button>
         </div>

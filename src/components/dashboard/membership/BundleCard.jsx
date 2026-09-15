@@ -32,15 +32,30 @@ export default function BundleCard({ bundle, programmes, lessons, usedBy, onEdit
         </div>
         <KebabMenu
           size="sm"
+          tip="Edit, publish or delete this bundle"
           items={[
-            { label: "Edit bundle", icon: "link", onClick: () => onEdit(bundle) },
+            {
+              label: "Edit bundle",
+              icon: "link",
+              tip: "Change its name, description and what's in it — every plan using it changes too",
+              onClick: () => onEdit(bundle),
+            },
             {
               label: isLiveItem(bundle) ? "Unpublish" : "Publish",
               icon: isLiveItem(bundle) ? "eyeOff" : "eye",
+              tip: isLiveItem(bundle)
+                ? "Hide it from members — plans that include it stop opening it"
+                : "Make it live — plans that include it start opening it",
               onClick: () => onPublish(bundle),
             },
             null,
-            { label: "Delete bundle", icon: "trash", danger: true, onClick: () => onDelete(bundle) },
+            {
+              label: "Delete bundle",
+              icon: "trash",
+              danger: true,
+              tip: "Delete the bundle — plans using it open less, the content is untouched",
+              onClick: () => onDelete(bundle),
+            },
           ]}
         />
       </div>

@@ -27,9 +27,18 @@ export default function EarningsChart({ series }) {
     <div className="cardbox">
       <div className="box-h">
         <h3>Earnings</h3>
-        <span className="mut">Last {series.length} months</span>
+        <span className="mut">
+          {money(series.reduce((t, p) => t + p.amount, 0))} over the last {series.length} months
+        </span>
       </div>
-      <svg viewBox="0 0 600 200" width="100%" style={{ height: "auto" }} fill="none">
+      <svg
+        viewBox="0 0 600 200"
+        width="100%"
+        style={{ height: "auto" }}
+        fill="none"
+        role="img"
+        aria-label={`Earnings by month: ${series.map((p) => `${p.month} ${money(p.amount)}`).join(", ")}`}
+      >
         <defs>
           <linearGradient id="earningsFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#F15B41" stopOpacity=".28" />
@@ -50,7 +59,10 @@ export default function EarningsChart({ series }) {
               r={i === points.length - 1 ? 4.5 : 3.5}
               stroke={i === points.length - 1 ? "#fff" : undefined}
               strokeWidth={i === points.length - 1 ? 2 : undefined}
-            />
+            >
+              {/* Hover a point for its month and amount. */}
+              <title>{`${p.key}: ${money(p.amount)}`}</title>
+            </circle>
           ))}
         </g>
         <text

@@ -23,19 +23,32 @@ export default function BundleFormModal({ open, editing, programmes = [], lesson
       maxWidth={540}
       footer={
         <>
-          <button className="btn btn-ghost" onClick={onClose}>
+          <button className="btn btn-ghost" onClick={onClose} data-tip="Close without saving">
             Cancel
           </button>
-          <button
-            className="btn btn-coral"
-            disabled={!form.name.trim() || empty}
-            onClick={() => {
-              onSave({ ...form, name: form.name.trim(), description: form.description.trim() });
-              onClose();
-            }}
+          <span
+            className="tip-wrap"
+            data-tip={
+              !form.name.trim()
+                ? "Give the bundle a name first"
+                : empty
+                  ? "Tick at least one programme or lesson"
+                  : editing
+                    ? "Save the changes — every plan using this bundle changes too"
+                    : "Create the bundle as a draft — publish it from its card"
+            }
           >
-            {editing ? "Save bundle" : "Create bundle"}
-          </button>
+            <button
+              className="btn btn-coral"
+              disabled={!form.name.trim() || empty}
+              onClick={() => {
+                onSave({ ...form, name: form.name.trim(), description: form.description.trim() });
+                onClose();
+              }}
+            >
+              {editing ? "Save bundle" : "Create bundle"}
+            </button>
+          </span>
         </>
       }
     >

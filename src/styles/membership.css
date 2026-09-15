@@ -696,12 +696,14 @@
 
 /* Ticked because the plan opens everything — nothing to switch off here. */
 .mt-cell.locked {
-  cursor: not-allowed;
   border-style: dashed;
   opacity: 0.75;
+  /* A disabled button takes no hover, so the cell around it carries the tip
+     that says why it's locked — and the not-allowed cursor with it. */
+  pointer-events: none;
 }
-.mt-cell.locked:hover {
-  border-color: rgba(46, 125, 80, 0.32);
+.mtable td:has(> .mt-cell.locked) {
+  cursor: not-allowed;
 }
 
 .bundle-status {
